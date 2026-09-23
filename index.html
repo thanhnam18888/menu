@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#F7F5F2">
 <meta name="description" content="Меню ресторана — RU / VI / 中文">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
   :root{color-scheme:light; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px)}
   body{margin:0}
@@ -144,6 +145,40 @@
   .slipacts button{appearance:none; cursor:pointer; font:600 13px/1 var(--sans); padding:11px 14px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink)}
   .slipacts button:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
 
+  /* ---- send order ---- */
+  .send{margin-top:18px; border-top:1px solid var(--line); padding-top:16px}
+  .send .fieldrow{display:flex; gap:8px; align-items:stretch}
+  .send input{width:110px; font:700 17px/1 var(--sans); text-align:center; color:var(--ink); background:var(--surface); border:1px solid var(--line); border-radius:9px; padding:12px 8px}
+  .send input:focus{outline:2px solid var(--accent); outline-offset:-1px}
+  .send .go{flex:1 1 auto; appearance:none; cursor:pointer; font:700 15px/1 var(--sans); border:0; border-radius:9px; background:var(--accent); color:var(--on-accent); padding:13px 16px}
+  .send .go[disabled]{opacity:.55; cursor:default}
+  .send .lbl{font-size:12.5px; color:var(--muted); margin-bottom:6px}
+  .send .msg{margin-top:10px; font-size:13px; font-weight:600}
+  .ok{color:#1E7A4B} :root[data-theme="dark"] .ok,:root:not([data-theme="light"]) .ok{color:#6FD3A0}
+  .bad{color:var(--hot)}
+
+  /* ---- kassa ---- */
+  .kwrap{max-width:var(--wrap); margin:0 auto; padding-inline:16px; padding-block:14px 60px}
+  .khead{display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:4px}
+  .khead h1{font-family:var(--serif); font-size:20px; font-weight:600; margin:0}
+  .kstat{font-size:12.5px; color:var(--muted)}
+  .kcard{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:14px; margin-top:12px}
+  .kcard.new{border-color:var(--accent); border-width:2px}
+  .kcard.done{opacity:.55}
+  .ktop{display:flex; align-items:baseline; justify-content:space-between; gap:10px}
+  .ktable{font-family:var(--serif); font-size:26px; font-weight:600; color:var(--accent)}
+  .ktime{font-size:12px; color:var(--muted); font-variant-numeric:tabular-nums}
+  .klines{margin-top:10px; display:flex; flex-wrap:wrap; gap:6px}
+  .kl{font-variant-numeric:tabular-nums; font-weight:700; font-size:18px; background:var(--chip); color:var(--ink); border-radius:7px; padding:5px 9px}
+  .kl .x{color:var(--accent)}
+  .kl .s{font-weight:400; font-size:12px; color:var(--muted)}
+  .kdetail{margin-top:10px; font-size:12.5px; color:var(--muted); line-height:1.6}
+  .kfoot{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:12px}
+  .ksum{font-variant-numeric:tabular-nums; font-weight:700}
+  .kbtn{appearance:none; cursor:pointer; font:700 13px/1 var(--sans); padding:11px 14px; border-radius:8px; border:1px solid var(--accent); background:var(--accent); color:var(--on-accent)}
+  .kcard.done .kbtn{background:transparent; color:var(--muted); border-color:var(--line)}
+  .kbtn:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+
   @media (max-width:380px){
     .row{grid-template-columns:44px 1fr auto; gap:8px}
     .brand{font-size:17px}
@@ -200,7 +235,24 @@
     <div class="stot"><span id="stotlabel"></span><span class="n" id="stotval"></span></div>
     <div class="note" id="slipnote"></div>
     <div class="slipacts"><button type="button" id="clearcart"></button></div>
+    <div class="send" id="send" hidden>
+      <div class="lbl" id="sendlbl"></div>
+      <div class="fieldrow">
+        <input id="table" type="number" inputmode="numeric" min="1" max="99" step="1" placeholder="№">
+        <button type="button" class="go" id="sendgo"></button>
+      </div>
+      <div class="msg" id="sendmsg"></div>
+    </div>
   </div>
+</section>
+
+<section class="kwrap" id="kassa" hidden>
+  <div class="khead">
+    <h1>Quầy thu ngân — đơn khách gọi</h1>
+    <div class="kstat" id="kstat">đang kết nối…</div>
+  </div>
+  <div class="kstat">Chép số món ra giấy đưa bếp, rồi bấm “Đã chép”.</div>
+  <div id="korders"></div>
 </section>
 
 <script>
@@ -213,6 +265,9 @@
           show:"Покажите этот экран официанту", total:"Предварительно", dishes:" блюд",
           emptyCart:"Заказ пуст",
           note:"Это предварительный расчёт. Официант принимает заказ, окончательный счёт считают на кассе.",
+          sendlbl:"Отправить заказ на кассу — укажите номер стола",
+          send:"Отправить", sending:"Отправка…", needTable:"Укажите номер стола",
+          sentOk:"Заказ отправлен. Официант подойдёт к столу.", sentErr:"Не отправилось. Позовите официанта.",
           tags:{spicy:"острое",hot3:"очень острое",offal:"субпродукты",sea:"морепродукты",peanut:"арахис",dairy:"молочное"} },
     vi: { brand:"Thực đơn", hint:"Đọc số hiệu món cho nhân viên", search:"Tìm: số hiệu hoặc tên món",
           tri:"3 thứ tiếng", empty:"Không tìm thấy món nào", found:"Tìm thấy: ",
@@ -221,6 +276,9 @@
           show:"Đưa màn hình này cho nhân viên", total:"Tạm tính", dishes:" món",
           emptyCart:"Chưa chọn món nào",
           note:"Đây chỉ là tạm tính. Nhân viên là người nhận gọi món, hoá đơn cuối cùng do quầy thu ngân tính.",
+          sendlbl:"Gửi đơn về quầy — nhập số bàn",
+          send:"Gửi đơn", sending:"Đang gửi…", needTable:"Nhập số bàn",
+          sentOk:"Đã gửi. Nhân viên sẽ ra bàn.", sentErr:"Gửi không được. Gọi nhân viên giúp.",
           tags:{spicy:"cay",hot3:"rất cay",offal:"nội tạng",sea:"hải sản",peanut:"lạc",dairy:"sữa"} },
     zh: { brand:"菜单", hint:"向服务员报菜品编号", search:"搜索：编号或菜名",
           tri:"三语", empty:"未找到菜品", found:"找到：",
@@ -229,10 +287,14 @@
           show:"请把此屏幕出示给服务员", total:"预估", dishes:" 道菜",
           emptyCart:"未选择菜品",
           note:"此为预估金额。由服务员正式点单，最终账单以收银台为准。",
+          sendlbl:"发送到收银台 — 请填写桌号",
+          send:"发送", sending:"发送中…", needTable:"请填写桌号",
+          sentOk:"已发送，服务员马上过来。", sentErr:"发送失败，请叫服务员。",
           tags:{spicy:"辣",hot3:"特辣",offal:"内脏",sea:"海鲜",peanut:"花生",dairy:"奶制品"} }
   };
   var ORDER = ["ru","vi","zh"];
   var lang = "ru", triple = false, data = null, index = {}, cart = {};
+  var KASSA = String(location.hash || "").toLowerCase() === "#kassa";
 
   try { var s = localStorage.getItem("menu.lang"); if (s && T[s]) lang = s; } catch (e) {}
   try { var c = JSON.parse(localStorage.getItem("menu.cart") || "{}"); if (c && typeof c === "object") cart = c; } catch (e) {}
@@ -326,6 +388,9 @@
     }
     document.getElementById("slipitems").innerHTML = html || '<div class="empty">' + esc(t.emptyCart) + '</div>';
     document.getElementById("stotval").textContent = money(cartTotal().sum);
+    document.getElementById("sendlbl").textContent = t.sendlbl;
+    document.getElementById("sendgo").textContent = t.send;
+    document.getElementById("sendgo").disabled = !L.length;
   }
 
   function render(){
@@ -402,6 +467,166 @@
   }
   $tri.addEventListener("click", function (){ triple = !triple; render(); });
   var tmr; $q.addEventListener("input", function (){ clearTimeout(tmr); tmr = setTimeout(render, 90); });
+
+  // ---- kho đơn dùng chung: chỉ có trên claude.ai, không có trên GitHub Pages ----
+  var store = null;
+  function useDb(cb){
+    try {
+      if (!window.claude || typeof claude.use !== "function"){ cb(null); return; }
+      claude.use("db").then(function (d){ cb(d || null); }, function (){ cb(null); });
+    } catch (e) { cb(null); }
+  }
+
+  function beep(){
+    try {
+      var C = window.AudioContext || window.webkitAudioContext; if (!C) return;
+      var a = new C(), o = a.createOscillator(), g = a.createGain();
+      o.type = "sine"; o.frequency.value = 880; o.connect(g); g.connect(a.destination);
+      g.gain.setValueAtTime(0.0001, a.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.25, a.currentTime + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, a.currentTime + 0.45);
+      o.start(); o.stop(a.currentTime + 0.5);
+    } catch (e) {}
+  }
+
+  // ---- kênh Telegram: cấu hình trong tg.json, không có thì bỏ qua ----
+  var tgCfg = null;
+  var SZTXT = { L:" (tô lớn)", S:" (tô nhỏ)", whole:" (nguyên con)", half:" (nửa con)" };
+
+  function orderText(tbl, L, total){
+    var d = new Date();
+    var hh = ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2);
+    var txt = "🔔 ĐƠN MỚI — Bàn " + tbl + "\n" + hh + "\n\n";
+    L.slice().sort(function (a, b){
+      return String(a.it.n).localeCompare(String(b.it.n), undefined, { numeric:true });
+    }).forEach(function (e){
+      txt += e.it.n + " ×" + e.q + " — " + e.it.vi + (SZTXT[e.p.s] || "") + "\n";
+    });
+    return txt + "\nTạm tính: " + total + " ₽";
+  }
+
+  function sendTelegram(tbl, L, total){
+    return fetch("https://api.telegram.org/bot" + tgCfg.token + "/sendMessage", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chat_id: tgCfg.chat_id, text: orderText(tbl, L, total),
+                             disable_web_page_preview: true })
+    }).then(function (r){ return r.json(); })
+      .then(function (j){ if (!j || !j.ok) throw new Error("tg"); });
+  }
+
+  function sendDb(tbl, L, total){
+    return store.collection("orders").add({
+      table: tbl, ts: Date.now(), iso: new Date().toISOString(), status: "new",
+      total: total, lang: lang,
+      lines: L.map(function (e){
+        return { n:e.it.n, ru:e.it.ru, vi:e.it.vi, q:e.q, a:e.p.a, s:e.p.s || "" };
+      })
+    }).then(function (){});
+  }
+
+  document.getElementById("sendgo").addEventListener("click", function (){
+    var t = T[lang], msg = document.getElementById("sendmsg"), btn = this;
+    var tbl = parseInt(document.getElementById("table").value, 10);
+    var L = cartLines(), total = cartTotal().sum;
+    if (!L.length) return;
+    if (!tgCfg && !store) return;
+    if (!(tbl > 0 && tbl < 100)){ msg.className = "msg bad"; msg.textContent = t.needTable; return; }
+    btn.disabled = true; msg.className = "msg"; msg.textContent = t.sending;
+    (tgCfg ? sendTelegram(tbl, L, total) : sendDb(tbl, L, total)).then(function (){
+      cart = {}; saveCart(); render(); renderSlip();
+      var m = document.getElementById("sendmsg");
+      m.className = "msg ok"; m.textContent = t.sentOk;
+      btn.disabled = false;
+    }, function (){
+      msg.className = "msg bad"; msg.textContent = t.sentErr; btn.disabled = false;
+    });
+  });
+
+  function kcard(id, o, isNew){
+    var lines = (o.lines || []).slice().sort(function (a, b){
+      return String(a.n).localeCompare(String(b.n), undefined, { numeric:true });
+    });
+    var SZ = { L:" lớn", S:" nhỏ", whole:" nguyên con", half:" nửa con" };
+    var chips = "", det = "";
+    lines.forEach(function (l){
+      var sz = SZ[l.s] || "";
+      chips += '<span class="kl">' + esc(l.n)
+             + (l.q > 1 ? '<span class="x"> ×' + l.q + '</span>' : "")
+             + (sz ? '<span class="s">' + esc(sz) + '</span>' : "") + '</span>';
+      det += esc(l.n) + " — " + esc(l.vi || l.ru || "") + (l.q > 1 ? " ×" + l.q : "") + "<br>";
+    });
+    var d = new Date(o.ts || Date.now());
+    var hh = ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2);
+    return '<div class="kcard ' + (isNew ? "new" : "done") + '">'
+      + '<div class="ktop"><div class="ktable">Bàn ' + esc(String(o.table || "?")) + '</div>'
+      + '<div class="ktime">' + hh + '</div></div>'
+      + '<div class="klines">' + chips + '</div>'
+      + '<div class="kdetail">' + det + '</div>'
+      + '<div class="kfoot"><div class="ksum">' + (o.total || 0) + ' ₽</div>'
+      + '<button type="button" class="kbtn" data-id="' + esc(id) + '" data-to="' + (isNew ? "done" : "new") + '">'
+      + (isNew ? "Đã chép" : "Mở lại") + '</button></div></div>';
+  }
+
+  function initKassa(){
+    document.querySelector(".demo").hidden = true;
+    document.querySelector("header.top").hidden = true;
+    document.querySelector("footer").hidden = true;
+    $list.hidden = true; $bar.hidden = true;
+    document.getElementById("kassa").hidden = false;
+    var $st = document.getElementById("kstat"), $k = document.getElementById("korders");
+    useDb(function (d){
+      if (!d){ $st.textContent = "không mở được kho đơn ở đây"; return; }
+      var seen = {}, first = true;
+      $k.addEventListener("click", function (ev){
+        var b = ev.target.closest("button[data-id]"); if (!b) return;
+        b.disabled = true;
+        d.collection("orders").doc(b.getAttribute("data-id"))
+          .update({ status: b.getAttribute("data-to") })
+          .then(function (){ b.disabled = false; }, function (){ b.disabled = false; });
+      });
+      d.collection("orders").orderBy("ts", "desc").limit(60).onSnapshot(function (snap){
+        var html = "", nNew = 0, fresh = 0;
+        snap.docs.forEach(function (doc){
+          var o = doc.data() || {}, isNew = o.status !== "done";
+          if (isNew) nNew++;
+          if (!seen[doc.id]){ seen[doc.id] = 1; if (!first && isNew) fresh++; }
+          html += kcard(doc.id, o, isNew);
+        });
+        $k.innerHTML = html || '<div class="kstat" style="margin-top:14px">chưa có đơn nào</div>';
+        $st.textContent = nNew ? (nNew + " đơn chờ xử lý") : "không có đơn chờ";
+        document.title = (nNew ? "(" + nNew + ") " : "") + "Quầy — đơn khách";
+        if (fresh){ try { if (navigator.vibrate) navigator.vibrate([200, 80, 200]); } catch (e) {} beep(); }
+        first = false;
+      }, function (){ $st.textContent = "mất kết nối — tải lại trang"; });
+    });
+  }
+
+  if (KASSA){ initKassa(); return; }
+
+  try {
+    if (window.Telegram && window.Telegram.WebApp){
+      window.Telegram.WebApp.ready();
+      window.Telegram.WebApp.expand();
+    }
+  } catch (e) {}
+
+  fetch("tg.json")
+    .then(function (r){ return r.ok ? r.json() : null; })
+    .then(function (c){
+      if (!c || !c.token || !c.chat_id) return;
+      tgCfg = c;
+      document.getElementById("send").hidden = false;
+      if (!$slip.hidden) renderSlip();
+    })
+    .catch(function (){});
+
+  useDb(function (d){
+    store = d;
+    if (!d || tgCfg) return;
+    document.getElementById("send").hidden = false;
+    if (!$slip.hidden) renderSlip();
+  });
 
   render();
   fetch("menu.json")
