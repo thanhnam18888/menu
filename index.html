@@ -61,8 +61,11 @@
   .top{position:sticky; top:env(safe-area-inset-top,0px); z-index:20; background:var(--surface); border-bottom:1px solid var(--line)}
   .top .wrap{padding-block:10px}
   .brandrow{display:flex; align-items:baseline; justify-content:space-between; gap:12px}
-  .brand{font-family:var(--serif); font-size:19px; font-weight:600}
+  .brand{font-family:var(--serif); font-size:19px; font-weight:600; display:flex; align-items:baseline; gap:8px; flex-wrap:wrap}
+  .tablechip{font-family:var(--sans); font-size:12.5px; font-weight:700; letter-spacing:.02em;
+    background:var(--accent); color:var(--on-accent); border-radius:999px; padding:3px 10px; white-space:nowrap}
   .hint{font-size:12px; color:var(--muted); margin-top:1px}
+  .fixedtable{font-weight:700; font-size:17px; color:var(--accent); padding:12px 0 2px}
 
   .seg{display:flex; gap:2px; background:var(--chip); border-radius:999px; padding:2px}
   .seg button{appearance:none; border:0; background:transparent; color:var(--chip-ink); font:600 12.5px/1 var(--sans); padding:6px 11px; border-radius:999px; cursor:pointer}
@@ -194,7 +197,7 @@
 <header class="top"><div class="wrap">
   <div class="brandrow">
     <div>
-      <div class="brand" id="brand">Меню</div>
+      <div class="brand"><span id="brand">Меню</span><span class="tablechip" id="tablechip" hidden></span></div>
       <div class="hint" id="hint">Назовите официанту номер блюда</div>
     </div>
     <div class="seg" role="group" aria-label="Язык">
@@ -237,6 +240,7 @@
     <div class="slipacts"><button type="button" id="clearcart"></button></div>
     <div class="send" id="send" hidden>
       <div class="lbl" id="sendlbl"></div>
+      <div class="fixedtable" id="fixedtable" hidden></div>
       <div class="fieldrow">
         <input id="table" type="number" inputmode="numeric" min="1" max="99" step="1" placeholder="№">
         <button type="button" class="go" id="sendgo"></button>
@@ -266,6 +270,7 @@
           emptyCart:"Заказ пуст",
           note:"Это предварительный расчёт. Официант принимает заказ, окончательный счёт считают на кассе.",
           sendlbl:"Отправить заказ на кассу — укажите номер стола",
+          sendlblFixed:"Отправить заказ на кассу", tblWord:"Стол",
           send:"Отправить", sending:"Отправка…", needTable:"Укажите номер стола",
           sentOk:"Заказ отправлен. Официант подойдёт к столу.", sentErr:"Не отправилось. Позовите официанта.",
           tags:{spicy:"острое",hot3:"очень острое",offal:"субпродукты",sea:"морепродукты",peanut:"арахис",dairy:"молочное"} },
@@ -277,6 +282,7 @@
           emptyCart:"Chưa chọn món nào",
           note:"Đây chỉ là tạm tính. Nhân viên là người nhận gọi món, hoá đơn cuối cùng do quầy thu ngân tính.",
           sendlbl:"Gửi đơn về quầy — nhập số bàn",
+          sendlblFixed:"Gửi đơn về quầy", tblWord:"Bàn",
           send:"Gửi đơn", sending:"Đang gửi…", needTable:"Nhập số bàn",
           sentOk:"Đã gửi. Nhân viên sẽ ra bàn.", sentErr:"Gửi không được. Gọi nhân viên giúp.",
           tags:{spicy:"cay",hot3:"rất cay",offal:"nội tạng",sea:"hải sản",peanut:"lạc",dairy:"sữa"} },
@@ -288,6 +294,7 @@
           emptyCart:"未选择菜品",
           note:"此为预估金额。由服务员正式点单，最终账单以收银台为准。",
           sendlbl:"发送到收银台 — 请填写桌号",
+          sendlblFixed:"发送到收银台", tblWord:"",
           send:"发送", sending:"发送中…", needTable:"请填写桌号",
           sentOk:"已发送，服务员马上过来。", sentErr:"发送失败，请叫服务员。",
           tags:{spicy:"辣",hot3:"特辣",offal:"内脏",sea:"海鲜",peanut:"花生",dairy:"奶制品"} }
@@ -295,6 +302,14 @@
   var ORDER = ["ru","vi","zh"];
   var lang = "ru", triple = false, data = null, index = {}, cart = {};
   var KASSA = String(location.hash || "").toLowerCase() === "#kassa";
+  // So ban nam trong dia chi cua ma QR: ...?ban=3  (hoac #ban3)
+  var TABLE = (function (){
+    var m = /[?&]ban=(\d{1,2})(?:&|$)/.exec(location.search)
+         || /^#ban(\d{1,2})$/.exec(location.hash || "");
+    var n = m ? parseInt(m[1], 10) : 0;
+    return (n > 0 && n < 100) ? n : 0;
+  })();
+  function tableText(n){ return lang === "zh" ? (n + "号桌") : (T[lang].tblWord + " " + n); }
 
   try { var s = localStorage.getItem("menu.lang"); if (s && T[s]) lang = s; } catch (e) {}
   try { var c = JSON.parse(localStorage.getItem("menu.cart") || "{}"); if (c && typeof c === "object") cart = c; } catch (e) {}
@@ -388,15 +403,22 @@
     }
     document.getElementById("slipitems").innerHTML = html || '<div class="empty">' + esc(t.emptyCart) + '</div>';
     document.getElementById("stotval").textContent = money(cartTotal().sum);
-    document.getElementById("sendlbl").textContent = t.sendlbl;
+    document.getElementById("sendlbl").textContent = TABLE ? t.sendlblFixed : t.sendlbl;
     document.getElementById("sendgo").textContent = t.send;
     document.getElementById("sendgo").disabled = !L.length;
+    document.getElementById("table").hidden = !!TABLE;
+    var ft = document.getElementById("fixedtable");
+    ft.hidden = !TABLE;
+    if (TABLE) ft.textContent = tableText(TABLE);
   }
 
   function render(){
     var t = T[lang];
     document.getElementById("brand").textContent = t.brand;
     document.getElementById("hint").textContent  = t.hint;
+    var chip = document.getElementById("tablechip");
+    chip.hidden = !TABLE;
+    if (TABLE) chip.textContent = tableText(TABLE);
     $q.placeholder = t.search; $q.setAttribute("aria-label", t.search);
     $tri.textContent = t.tri;
     for (var i = 0; i < ORDER.length; i++)
@@ -489,30 +511,23 @@
     } catch (e) {}
   }
 
-  // ---- kênh Telegram: cấu hình trong tg.json, không có thì bỏ qua ----
-  var tgCfg = null;
+  // ---- gui don qua lop trung gian (Yandex Cloud Function) ----
+  // Trang KHONG giu token cua bat ky kenh nao, chi biet dia chi ham.
+  var api = null;
   var SZTXT = { L:" (tô lớn)", S:" (tô nhỏ)", whole:" (nguyên con)", half:" (nửa con)" };
 
-  function orderText(tbl, L, total){
-    var d = new Date();
-    var hh = ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2);
-    var txt = "🔔 ĐƠN MỚI — Bàn " + tbl + "\n" + hh + "\n\n";
-    L.slice().sort(function (a, b){
+  function sendApi(tbl, L, total){
+    var items = L.slice().sort(function (a, b){
       return String(a.it.n).localeCompare(String(b.it.n), undefined, { numeric:true });
-    }).forEach(function (e){
-      txt += e.it.n + " ×" + e.q + " — " + e.it.vi + (SZTXT[e.p.s] || "") + "\n";
+    }).map(function (e){
+      return { n: e.it.n, q: e.q, s: e.p.s || "", nm: e.it.vi };
     });
-    return txt + "\nTạm tính: " + total + " ₽";
-  }
-
-  function sendTelegram(tbl, L, total){
-    return fetch("https://api.telegram.org/bot" + tgCfg.token + "/sendMessage", {
+    return fetch(api.url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chat_id: tgCfg.chat_id, text: orderText(tbl, L, total),
-                             disable_web_page_preview: true })
-    }).then(function (r){ return r.json(); })
-      .then(function (j){ if (!j || !j.ok) throw new Error("tg"); });
+      body: JSON.stringify({ ban: tbl, items: items, total: total, lang: lang, key: api.key || "" })
+    }).then(function (r){ return r.json().catch(function (){ return null; }); })
+      .then(function (j){ if (!j || !j.ok) throw new Error("api"); });
   }
 
   function sendDb(tbl, L, total){
@@ -527,19 +542,32 @@
 
   document.getElementById("sendgo").addEventListener("click", function (){
     var t = T[lang], msg = document.getElementById("sendmsg"), btn = this;
-    var tbl = parseInt(document.getElementById("table").value, 10);
+    var tbl = TABLE || parseInt(document.getElementById("table").value, 10);
     var L = cartLines(), total = cartTotal().sum;
     if (!L.length) return;
-    if (!tgCfg && !store) return;
+    if (!api && !store) return;
     if (!(tbl > 0 && tbl < 100)){ msg.className = "msg bad"; msg.textContent = t.needTable; return; }
     btn.disabled = true; msg.className = "msg"; msg.textContent = t.sending;
-    (tgCfg ? sendTelegram(tbl, L, total) : sendDb(tbl, L, total)).then(function (){
+
+    var jobs = api ? [{ name:"Telegram", p: sendApi(tbl, L, total) }]
+                   : [{ name:"kho đơn", p: sendDb(tbl, L, total) }];
+
+    Promise.all(jobs.map(function (j){
+      return j.p.then(function (){ return { n:j.name, ok:true }; },
+                      function (){ return { n:j.name, ok:false }; });
+    })).then(function (res){
+      var okList = res.filter(function (r){ return r.ok; }).map(function (r){ return r.n; });
+      var bad = res.filter(function (r){ return !r.ok; }).map(function (r){ return r.n; });
+      btn.disabled = false;
+      if (!okList.length){
+        msg.className = "msg bad"; msg.textContent = t.sentErr + " (" + bad.join(", ") + ")";
+        return;
+      }
       cart = {}; saveCart(); render(); renderSlip();
       var m = document.getElementById("sendmsg");
-      m.className = "msg ok"; m.textContent = t.sentOk;
-      btn.disabled = false;
-    }, function (){
-      msg.className = "msg bad"; msg.textContent = t.sentErr; btn.disabled = false;
+      m.className = "msg ok";
+      m.textContent = t.sentOk + " ✓ " + okList.join(", ")
+                    + (bad.length ? " · ✗ " + bad.join(", ") : "");
     });
   });
 
@@ -614,21 +642,20 @@
   // mốc thời gian theo phút: dữ liệu mới ngấm trong 1 phút, không phải 10
   var FRESH = "?t=" + Math.floor(Date.now() / 60000);
 
-  fetch("tg.json" + FRESH)
+  function showSend(){
+    document.getElementById("send").hidden = false;
+    if (!$slip.hidden) renderSlip();
+  }
+
+  fetch("send.json" + FRESH)
     .then(function (r){ return r.ok ? r.json() : null; })
-    .then(function (c){
-      if (!c || !c.token || !c.chat_id) return;
-      tgCfg = c;
-      document.getElementById("send").hidden = false;
-      if (!$slip.hidden) renderSlip();
-    })
+    .then(function (c){ if (c && c.url){ api = c; showSend(); } })
     .catch(function (){});
 
   useDb(function (d){
     store = d;
-    if (!d || tgCfg) return;
-    document.getElementById("send").hidden = false;
-    if (!$slip.hidden) renderSlip();
+    if (!d || api) return;
+    showSend();
   });
 
   render();
