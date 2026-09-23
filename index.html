@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F7F5F2">
+<meta name="description" content="Меню ресторана — RU / VI / 中文">
+<style>
+  :root{color-scheme:light; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px)}
+  body{margin:0}
+  img{max-width:100%}
+  [hidden]{display:none!important}
+</style>
+<title>Menu Quán C Hiển</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;700&family=Noto+Serif:wght@600&display=swap">
+<style>
+  :root{
+    --ground:#F7F5F2; --surface:#FFFFFF; --ink:#1B1A17; --muted:#726B62;
+    --line:#E3DED6; --line-soft:#EFEBE5;
+    --accent:#A32E24; --accent-soft:#F4E6E3; --accent-ink:#8A271E;
+    --chip:#F0EDE7; --chip-ink:#5E574E;
+    --hot:#B8341F; --hot-bg:#F8E4DF;
+    --sans:"Noto Sans","Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+    --serif:"Noto Serif",Georgia,"Times New Roman","Noto Serif SC",serif;
+    --wrap:660px;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      color-scheme:dark;
+      --ground:#141311; --surface:#1D1B18; --ink:#EDE8E0; --muted:#9E958A;
+      --line:#2E2A26; --line-soft:#252220;
+      --accent:#E8796A; --accent-soft:#3A221E; --accent-ink:#F0958A;
+      --chip:#272320; --chip-ink:#A79D91;
+      --hot:#F08A75; --hot-bg:#3C1F19;
+    }
+  }
+  :root[data-theme="dark"]{
+    color-scheme:dark;
+    --ground:#141311; --surface:#1D1B18; --ink:#EDE8E0; --muted:#9E958A;
+    --line:#2E2A26; --line-soft:#252220;
+    --accent:#E8796A; --accent-soft:#3A221E; --accent-ink:#F0958A;
+    --chip:#272320; --chip-ink:#A79D91;
+    --hot:#F08A75; --hot-bg:#3C1F19;
+  }
+
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--ground); color:var(--ink);
+    font-family:var(--sans); font-size:15px; line-height:1.45;
+    -webkit-text-size-adjust:100%;
+  }
+  .wrap{max-width:var(--wrap); margin:0 auto; padding-inline:16px}
+
+  /* ---------- demo banner ---------- */
+  .demo{
+    background:var(--accent-soft); color:var(--accent-ink);
+    border-bottom:1px solid var(--line);
+    font-size:12.5px; line-height:1.5;
+  }
+  .demo .wrap{padding-block:9px}
+  .demo b{font-weight:700}
+
+  /* ---------- header ---------- */
+  .top{
+    position:sticky; top:env(safe-area-inset-top,0px); z-index:20;
+    background:var(--surface); border-bottom:1px solid var(--line);
+  }
+  .top .wrap{padding-block:10px}
+  .brandrow{display:flex; align-items:baseline; justify-content:space-between; gap:12px}
+  .brand{font-family:var(--serif); font-size:19px; font-weight:600; letter-spacing:.01em}
+  .hint{font-size:12px; color:var(--muted); margin-top:1px}
+
+  .seg{display:flex; gap:2px; background:var(--chip); border-radius:999px; padding:2px}
+  .seg button{
+    appearance:none; border:0; background:transparent; color:var(--chip-ink);
+    font:600 12.5px/1 var(--sans); padding:6px 11px; border-radius:999px; cursor:pointer;
+  }
+  .seg button[aria-pressed="true"]{background:var(--surface); color:var(--ink); box-shadow:0 1px 2px rgba(0,0,0,.12)}
+  .seg button:focus-visible{outline:2px solid var(--accent); outline-offset:1px}
+
+  .tools{display:flex; gap:8px; align-items:center; margin-top:9px}
+  #q{
+    flex:1 1 auto; min-width:0; font:400 15px/1.2 var(--sans); color:var(--ink);
+    background:var(--ground); border:1px solid var(--line); border-radius:9px; padding:9px 11px;
+  }
+  #q:focus{outline:2px solid var(--accent); outline-offset:-1px; border-color:transparent}
+  .tri{
+    appearance:none; border:1px solid var(--line); background:var(--ground); color:var(--chip-ink);
+    font:600 12.5px/1 var(--sans); padding:9px 11px; border-radius:9px; cursor:pointer; white-space:nowrap;
+  }
+  .tri[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:#fff}
+  .tri:focus-visible{outline:2px solid var(--accent); outline-offset:1px}
+
+  .jump{display:flex; gap:6px; overflow-x:auto; margin-top:9px; padding-bottom:2px; scrollbar-width:none}
+  .jump::-webkit-scrollbar{display:none}
+  .jump a{
+    flex:0 0 auto; font-size:12.5px; font-weight:500; text-decoration:none;
+    color:var(--chip-ink); background:var(--chip); padding:5px 10px; border-radius:999px;
+  }
+  .jump a:focus-visible{outline:2px solid var(--accent); outline-offset:1px}
+
+  /* ---------- list ---------- */
+  main{padding-bottom:40px}
+  .ghead{
+    font-family:var(--serif); font-size:13px; font-weight:600; letter-spacing:.09em; text-transform:uppercase;
+    color:var(--accent); background:var(--ground);
+    padding-block:18px 7px; border-bottom:1px solid var(--line);
+  }
+  .rows{background:var(--surface); border:1px solid var(--line); border-radius:10px; margin-top:10px; overflow:hidden}
+
+  .row{display:grid; grid-template-columns:52px 1fr auto; align-items:start; gap:10px; padding:11px 13px 11px 0}
+  .row + .row{border-top:1px solid var(--line-soft)}
+  .num{
+    font-variant-numeric:tabular-nums; font-weight:700; font-size:13.5px; color:var(--accent);
+    text-align:center; padding-top:1px; border-right:1px solid var(--line-soft); align-self:stretch;
+  }
+  .nm{min-width:0}
+  .nm .main{font-size:14.5px; overflow-wrap:anywhere}
+  .nm .alt{font-size:12.5px; color:var(--muted); margin-top:2px; overflow-wrap:anywhere}
+  .tags{display:flex; flex-wrap:wrap; gap:4px; margin-top:5px}
+  .tag{font-size:10.5px; font-weight:600; letter-spacing:.02em; padding:2px 6px; border-radius:4px; background:var(--chip); color:var(--chip-ink)}
+  .tag.t-hot,.tag.t-hot3{background:var(--hot-bg); color:var(--hot)}
+  .price{font-variant-numeric:tabular-nums; font-weight:700; font-size:14.5px; text-align:right; white-space:nowrap}
+  .price .sz{display:block; font-weight:400; font-size:11px; color:var(--muted)}
+  .price .two{display:block}
+  .price .two + .two{margin-top:3px}
+
+  .empty{padding:26px 4px; color:var(--muted); font-size:14px}
+  footer{border-top:1px solid var(--line); margin-top:26px}
+  footer .wrap{padding-block:16px; color:var(--muted); font-size:12px; line-height:1.6}
+
+  @media (max-width:380px){
+    .row{grid-template-columns:44px 1fr auto; gap:8px}
+    .brand{font-size:17px}
+  }
+  @media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+</style>
+</head>
+<body>
+<div class="demo"><div class="wrap">
+  <b>BẢN DEMO — chưa dùng cho khách.</b> Tên tiếng Nga còn rút gọn, nhãn cảnh báo (cay / nội tạng / lạc / sữa) do suy ra từ thực đơn gốc, <b>phải nhờ bếp xác nhận</b> trước khi dùng thật.
+</div></div>
+
+<header class="top"><div class="wrap">
+  <div class="brandrow">
+    <div>
+      <div class="brand" id="brand">Меню</div>
+      <div class="hint" id="hint">Назовите официанту номер блюда</div>
+    </div>
+    <div class="seg" role="group" aria-label="Язык">
+      <button type="button" id="lang-ru" data-lang="ru" aria-pressed="true">RU</button>
+      <button type="button" id="lang-vi" data-lang="vi" aria-pressed="false">VI</button>
+      <button type="button" id="lang-zh" data-lang="zh" aria-pressed="false">中</button>
+    </div>
+  </div>
+  <div class="tools">
+    <input id="q" type="search" autocomplete="off" placeholder="Поиск" aria-label="Поиск">
+    <button type="button" class="tri" id="tri" aria-pressed="false">3×</button>
+  </div>
+  <nav class="jump" id="jump" aria-label="nav"></nav>
+</div></header>
+
+<main class="wrap" id="list" aria-live="polite"></main>
+
+<footer><div class="wrap">
+  <div id="foot"></div>
+</div></footer>
+
+<script>
+(function () {
+  var T = {
+    ru: { brand:"Меню", hint:"Назовите официанту номер блюда", search:"Поиск: номер или название",
+          tri:"3 языка", empty:"Ничего не найдено", found:"Найдено: ",
+          foot:"Цены в рублях. Обновлено ", err:"Меню не загрузилось — попросите бумажное меню.",
+          tags:{spicy:"острое",hot3:"очень острое",offal:"субпродукты",sea:"морепродукты",peanut:"арахис",dairy:"молочное"} },
+    vi: { brand:"Thực đơn", hint:"Đọc số hiệu món cho nhân viên", search:"Tìm: số hiệu hoặc tên món",
+          tri:"3 thứ tiếng", empty:"Không tìm thấy món nào", found:"Tìm thấy: ",
+          foot:"Giá tính bằng rúp. Cập nhật ", err:"Không tải được thực đơn — xin dùng menu giấy.",
+          tags:{spicy:"cay",hot3:"rất cay",offal:"nội tạng",sea:"hải sản",peanut:"lạc",dairy:"sữa"} },
+    zh: { brand:"菜单", hint:"向服务员报菜品编号", search:"搜索：编号或菜名",
+          tri:"三语", empty:"未找到菜品", found:"找到：",
+          foot:"价格以卢布计。更新于 ", err:"菜单加载失败 — 请使用纸质菜单。",
+          tags:{spicy:"辣",hot3:"特辣",offal:"内脏",sea:"海鲜",peanut:"花生",dairy:"奶制品"} }
+  };
+  var ORDER = ["ru","vi","zh"];
+  var lang = "ru", triple = false, data = null;
+
+  try { var s = localStorage.getItem("menu.lang"); if (s && T[s]) lang = s; } catch (e) {}
+
+  var $list = document.getElementById("list"),
+      $jump = document.getElementById("jump"),
+      $q    = document.getElementById("q"),
+      $tri  = document.getElementById("tri");
+
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){
+    return ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[c]; }); }
+
+  function priceHTML(p){
+    var t = T[lang], out = "";
+    for (var i = 0; i < p.length; i++){
+      var lbl = p[i].s ? '<span class="sz">' + esc(data.sizeLabel[p[i].s][lang]) + '</span>' : "";
+      out += '<span class="two">' + p[i].a + ' ' + data.currency + lbl + '</span>';
+    }
+    return out;
+  }
+
+  function rowHTML(it){
+    var t = T[lang], alt = "", i, o;
+    if (triple){
+      for (i = 0; i < ORDER.length; i++){ o = ORDER[i]; if (o !== lang) alt += (alt ? " · " : "") + esc(it[o]); }
+    }
+    var tg = "";
+    for (i = 0; i < it.t.length; i++){
+      var k = it.t[i];
+      tg += '<span class="tag t-' + (k === "hot3" ? "hot3" : k === "spicy" ? "hot" : k) + '">' + esc(t.tags[k]) + '</span>';
+    }
+    return '<div class="row">'
+      + '<div class="num">' + esc(it.n) + '</div>'
+      + '<div class="nm"><div class="main">' + esc(it[lang]) + '</div>'
+      + (alt ? '<div class="alt">' + alt + '</div>' : "")
+      + (tg ? '<div class="tags">' + tg + '</div>' : "")
+      + '</div>'
+      + '<div class="price">' + priceHTML(it.p) + '</div>'
+      + '</div>';
+  }
+
+  function match(it, q){
+    if (!q) return true;
+    if (it.n.toLowerCase().indexOf(q) === 0) return true;
+    for (var i = 0; i < ORDER.length; i++) if (it[ORDER[i]].toLowerCase().indexOf(q) > -1) return true;
+    return false;
+  }
+
+  function render(){
+    var t = T[lang];
+    document.getElementById("brand").textContent = t.brand;
+    document.getElementById("hint").textContent  = t.hint;
+    $q.placeholder = t.search; $q.setAttribute("aria-label", t.search);
+    $tri.textContent = t.tri;
+    for (var i = 0; i < ORDER.length; i++)
+      document.getElementById("lang-" + ORDER[i]).setAttribute("aria-pressed", String(ORDER[i] === lang));
+    $tri.setAttribute("aria-pressed", String(triple));
+    document.documentElement.lang = lang === "zh" ? "zh-Hans" : lang;
+
+    if (!data){ $list.innerHTML = '<div class="empty">…</div>'; return; }
+
+    var q = $q.value.trim().toLowerCase(), html = "", nav = "", shown = 0;
+    for (var g = 0; g < data.groups.length; g++){
+      var grp = data.groups[g], rows = "", n = 0;
+      for (var k = 0; k < grp.items.length; k++){
+        if (match(grp.items[k], q)){ rows += rowHTML(grp.items[k]); n++; }
+      }
+      if (!n) continue;
+      shown += n;
+      html += '<section id="' + grp.id + '"><h2 class="ghead">' + esc(grp.name[lang]) + '</h2>'
+            + '<div class="rows">' + rows + '</div></section>';
+      nav += '<a href="#' + grp.id + '">' + esc(grp.name[lang]) + '</a>';
+    }
+    $list.innerHTML = shown ? html : '<div class="empty">' + esc(t.empty) + '</div>';
+    $jump.innerHTML = q ? "" : nav;
+    document.getElementById("foot").textContent =
+      (q ? t.found + shown + " · " : "") + t.foot + data.updated;
+  }
+
+  for (var i = 0; i < ORDER.length; i++){
+    (function (o){
+      document.getElementById("lang-" + o).addEventListener("click", function (){
+        lang = o; try { localStorage.setItem("menu.lang", o); } catch (e) {} render();
+      });
+    })(ORDER[i]);
+  }
+  $tri.addEventListener("click", function (){ triple = !triple; render(); });
+  var tmr; $q.addEventListener("input", function (){ clearTimeout(tmr); tmr = setTimeout(render, 90); });
+
+  render();
+  fetch("menu.json")
+    .then(function (r){ if (!r.ok) throw 0; return r.json(); })
+    .then(function (j){ data = j; render(); })
+    .catch(function (){ $list.innerHTML = '<div class="empty">' + esc(T[lang].err) + '</div>'; });
+})();
+</script>
+</body>
+</html>
