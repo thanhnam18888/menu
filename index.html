@@ -611,7 +611,10 @@
     }
   } catch (e) {}
 
-  fetch("tg.json")
+  // mốc thời gian theo phút: dữ liệu mới ngấm trong 1 phút, không phải 10
+  var FRESH = "?t=" + Math.floor(Date.now() / 60000);
+
+  fetch("tg.json" + FRESH)
     .then(function (r){ return r.ok ? r.json() : null; })
     .then(function (c){
       if (!c || !c.token || !c.chat_id) return;
@@ -629,7 +632,7 @@
   });
 
   render();
-  fetch("menu.json")
+  fetch("menu.json" + FRESH)
     .then(function (r){ if (!r.ok) throw 0; return r.json(); })
     .then(function (j){
       data = j; index = {};
