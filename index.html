@@ -19,7 +19,7 @@
   :root{
     --ground:#F7F5F2; --surface:#FFFFFF; --ink:#1B1A17; --muted:#726B62;
     --line:#E3DED6; --line-soft:#EFEBE5;
-    --accent:#A32E24; --accent-soft:#F4E6E3; --accent-ink:#8A271E;
+    --accent:#A32E24; --accent-soft:#F4E6E3; --accent-ink:#8A271E; --on-accent:#FFFFFF;
     --chip:#F0EDE7; --chip-ink:#5E574E;
     --hot:#B8341F; --hot-bg:#F8E4DF;
     --sans:"Noto Sans","Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
@@ -31,7 +31,7 @@
       color-scheme:dark;
       --ground:#141311; --surface:#1D1B18; --ink:#EDE8E0; --muted:#9E958A;
       --line:#2E2A26; --line-soft:#252220;
-      --accent:#E8796A; --accent-soft:#3A221E; --accent-ink:#F0958A;
+      --accent:#E8796A; --accent-soft:#3A221E; --accent-ink:#F0958A; --on-accent:#1B1211;
       --chip:#272320; --chip-ink:#A79D91;
       --hot:#F08A75; --hot-bg:#3C1F19;
     }
@@ -40,7 +40,7 @@
     color-scheme:dark;
     --ground:#141311; --surface:#1D1B18; --ink:#EDE8E0; --muted:#9E958A;
     --line:#2E2A26; --line-soft:#252220;
-    --accent:#E8796A; --accent-soft:#3A221E; --accent-ink:#F0958A;
+    --accent:#E8796A; --accent-soft:#3A221E; --accent-ink:#F0958A; --on-accent:#1B1211;
     --chip:#272320; --chip-ink:#A79D91;
     --hot:#F08A75; --hot-bg:#3C1F19;
   }
@@ -53,83 +53,96 @@
   }
   .wrap{max-width:var(--wrap); margin:0 auto; padding-inline:16px}
 
-  /* ---------- demo banner ---------- */
-  .demo{
-    background:var(--accent-soft); color:var(--accent-ink);
-    border-bottom:1px solid var(--line);
-    font-size:12.5px; line-height:1.5;
-  }
+  .demo{background:var(--accent-soft); color:var(--accent-ink); border-bottom:1px solid var(--line); font-size:12.5px; line-height:1.5}
   .demo .wrap{padding-block:9px}
   .demo b{font-weight:700}
 
-  /* ---------- header ---------- */
-  .top{
-    position:sticky; top:env(safe-area-inset-top,0px); z-index:20;
-    background:var(--surface); border-bottom:1px solid var(--line);
-  }
+  .top{position:sticky; top:env(safe-area-inset-top,0px); z-index:20; background:var(--surface); border-bottom:1px solid var(--line)}
   .top .wrap{padding-block:10px}
   .brandrow{display:flex; align-items:baseline; justify-content:space-between; gap:12px}
-  .brand{font-family:var(--serif); font-size:19px; font-weight:600; letter-spacing:.01em}
+  .brand{font-family:var(--serif); font-size:19px; font-weight:600}
   .hint{font-size:12px; color:var(--muted); margin-top:1px}
 
   .seg{display:flex; gap:2px; background:var(--chip); border-radius:999px; padding:2px}
-  .seg button{
-    appearance:none; border:0; background:transparent; color:var(--chip-ink);
-    font:600 12.5px/1 var(--sans); padding:6px 11px; border-radius:999px; cursor:pointer;
-  }
+  .seg button{appearance:none; border:0; background:transparent; color:var(--chip-ink); font:600 12.5px/1 var(--sans); padding:6px 11px; border-radius:999px; cursor:pointer}
   .seg button[aria-pressed="true"]{background:var(--surface); color:var(--ink); box-shadow:0 1px 2px rgba(0,0,0,.12)}
   .seg button:focus-visible{outline:2px solid var(--accent); outline-offset:1px}
 
   .tools{display:flex; gap:8px; align-items:center; margin-top:9px}
-  #q{
-    flex:1 1 auto; min-width:0; font:400 15px/1.2 var(--sans); color:var(--ink);
-    background:var(--ground); border:1px solid var(--line); border-radius:9px; padding:9px 11px;
-  }
+  #q{flex:1 1 auto; min-width:0; font:400 15px/1.2 var(--sans); color:var(--ink); background:var(--ground); border:1px solid var(--line); border-radius:9px; padding:9px 11px}
   #q:focus{outline:2px solid var(--accent); outline-offset:-1px; border-color:transparent}
-  .tri{
-    appearance:none; border:1px solid var(--line); background:var(--ground); color:var(--chip-ink);
-    font:600 12.5px/1 var(--sans); padding:9px 11px; border-radius:9px; cursor:pointer; white-space:nowrap;
-  }
-  .tri[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:#fff}
+  .tri{appearance:none; border:1px solid var(--line); background:var(--ground); color:var(--chip-ink); font:600 12.5px/1 var(--sans); padding:9px 11px; border-radius:9px; cursor:pointer; white-space:nowrap}
+  .tri[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:var(--on-accent)}
   .tri:focus-visible{outline:2px solid var(--accent); outline-offset:1px}
 
   .jump{display:flex; gap:6px; overflow-x:auto; margin-top:9px; padding-bottom:2px; scrollbar-width:none}
   .jump::-webkit-scrollbar{display:none}
-  .jump a{
-    flex:0 0 auto; font-size:12.5px; font-weight:500; text-decoration:none;
-    color:var(--chip-ink); background:var(--chip); padding:5px 10px; border-radius:999px;
-  }
+  .jump a{flex:0 0 auto; font-size:12.5px; font-weight:500; text-decoration:none; color:var(--chip-ink); background:var(--chip); padding:5px 10px; border-radius:999px}
   .jump a:focus-visible{outline:2px solid var(--accent); outline-offset:1px}
 
-  /* ---------- list ---------- */
-  main{padding-bottom:40px}
-  .ghead{
-    font-family:var(--serif); font-size:13px; font-weight:600; letter-spacing:.09em; text-transform:uppercase;
-    color:var(--accent); background:var(--ground);
-    padding-block:18px 7px; border-bottom:1px solid var(--line);
-  }
+  main{padding-bottom:96px}
+  .ghead{font-family:var(--serif); font-size:13px; font-weight:600; letter-spacing:.09em; text-transform:uppercase; color:var(--accent); background:var(--ground); padding-block:18px 7px; border-bottom:1px solid var(--line)}
   .rows{background:var(--surface); border:1px solid var(--line); border-radius:10px; margin-top:10px; overflow:hidden}
 
   .row{display:grid; grid-template-columns:52px 1fr auto; align-items:start; gap:10px; padding:11px 13px 11px 0}
   .row + .row{border-top:1px solid var(--line-soft)}
-  .num{
-    font-variant-numeric:tabular-nums; font-weight:700; font-size:13.5px; color:var(--accent);
-    text-align:center; padding-top:1px; border-right:1px solid var(--line-soft); align-self:stretch;
-  }
+  .row.picked{background:var(--accent-soft)}
+  .num{font-variant-numeric:tabular-nums; font-weight:700; font-size:13.5px; color:var(--accent); text-align:center; padding-top:1px; border-right:1px solid var(--line-soft); align-self:stretch}
   .nm{min-width:0}
   .nm .main{font-size:14.5px; overflow-wrap:anywhere}
   .nm .alt{font-size:12.5px; color:var(--muted); margin-top:2px; overflow-wrap:anywhere}
   .tags{display:flex; flex-wrap:wrap; gap:4px; margin-top:5px}
-  .tag{font-size:10.5px; font-weight:600; letter-spacing:.02em; padding:2px 6px; border-radius:4px; background:var(--chip); color:var(--chip-ink)}
+  .tag{font-size:10.5px; font-weight:600; padding:2px 6px; border-radius:4px; background:var(--chip); color:var(--chip-ink)}
   .tag.t-hot,.tag.t-hot3{background:var(--hot-bg); color:var(--hot)}
-  .price{font-variant-numeric:tabular-nums; font-weight:700; font-size:14.5px; text-align:right; white-space:nowrap}
-  .price .sz{display:block; font-weight:400; font-size:11px; color:var(--muted)}
-  .price .two{display:block}
-  .price .two + .two{margin-top:3px}
+
+  .buy{display:flex; flex-direction:column; align-items:flex-end; gap:6px}
+  .pline{display:flex; align-items:center; gap:8px}
+  .amt{font-variant-numeric:tabular-nums; font-weight:700; font-size:14.5px; white-space:nowrap; text-align:right}
+  .amt .sz{display:block; font-weight:400; font-size:11px; color:var(--muted)}
+  .step{display:flex; align-items:center; gap:2px}
+  .step button,.add{
+    appearance:none; cursor:pointer; font:700 17px/1 var(--sans);
+    width:30px; height:30px; border-radius:8px; display:grid; place-items:center;
+    border:1px solid var(--line); background:var(--ground); color:var(--accent);
+  }
+  .add{border-color:var(--accent); background:var(--accent); color:var(--on-accent)}
+  .step button:focus-visible,.add:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+  .qty{font-variant-numeric:tabular-nums; font-weight:700; font-size:14px; min-width:22px; text-align:center}
 
   .empty{padding:26px 4px; color:var(--muted); font-size:14px}
   footer{border-top:1px solid var(--line); margin-top:26px}
   footer .wrap{padding-block:16px; color:var(--muted); font-size:12px; line-height:1.6}
+
+  /* ---- bottom bar ---- */
+  .bar{
+    position:fixed; left:0; right:0; bottom:0; z-index:30;
+    background:var(--accent); color:var(--on-accent);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+    box-shadow:0 -2px 12px rgba(0,0,0,.18);
+  }
+  .bar .wrap{display:flex; align-items:center; justify-content:space-between; gap:12px; padding-block:12px}
+  .bar .cnt{font-size:13px; font-weight:500; opacity:.92}
+  .bar .sum{font-variant-numeric:tabular-nums; font-weight:700; font-size:17px}
+  .bar button{appearance:none; border:1px solid currentColor; background:transparent; color:inherit; font:700 13px/1 var(--sans); padding:10px 14px; border-radius:8px; cursor:pointer; white-space:nowrap}
+  .bar button:focus-visible{outline:2px solid var(--on-accent); outline-offset:2px}
+
+  /* ---- slip ---- */
+  .slip{position:fixed; inset:0; z-index:40; background:var(--ground); overflow-y:auto; -webkit-overflow-scrolling:touch}
+  .sliphead{position:sticky; top:0; background:var(--surface); border-bottom:1px solid var(--line); padding-top:env(safe-area-inset-top,0px)}
+  .sliphead .wrap{display:flex; align-items:center; justify-content:space-between; gap:12px; padding-block:12px}
+  .sliptitle{font-family:var(--serif); font-size:18px; font-weight:600}
+  .slipshow{font-size:12.5px; color:var(--muted); margin-top:1px}
+  .slipbody{padding-bottom:40px}
+  .sline{display:grid; grid-template-columns:auto 1fr auto; gap:12px; align-items:baseline; padding-block:12px; border-bottom:1px solid var(--line-soft)}
+  .sline .sn{font-variant-numeric:tabular-nums; font-weight:700; font-size:20px; color:var(--accent); min-width:46px}
+  .sline .sq{font-size:12.5px; color:var(--muted); margin-top:2px}
+  .sline .sp{font-variant-numeric:tabular-nums; font-weight:600; white-space:nowrap}
+  .stot{display:flex; align-items:baseline; justify-content:space-between; gap:12px; padding-block:16px; font-size:17px; font-weight:700}
+  .stot .n{font-variant-numeric:tabular-nums; font-size:22px}
+  .note{background:var(--accent-soft); color:var(--accent-ink); border-radius:8px; padding:11px 12px; font-size:12.5px; line-height:1.5}
+  .slipacts{display:flex; gap:8px; margin-top:16px}
+  .slipacts button{appearance:none; cursor:pointer; font:600 13px/1 var(--sans); padding:11px 14px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink)}
+  .slipacts button:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
 
   @media (max-width:380px){
     .row{grid-template-columns:44px 1fr auto; gap:8px}
@@ -162,11 +175,33 @@
   <nav class="jump" id="jump" aria-label="nav"></nav>
 </div></header>
 
-<main class="wrap" id="list" aria-live="polite"></main>
+<main class="wrap" id="list"></main>
 
-<footer><div class="wrap">
-  <div id="foot"></div>
-</div></footer>
+<footer><div class="wrap"><div id="foot"></div></div></footer>
+
+<div class="bar" id="bar" hidden><div class="wrap">
+  <div>
+    <div class="cnt" id="barcnt"></div>
+    <div class="sum" id="barsum"></div>
+  </div>
+  <button type="button" id="openslip"></button>
+</div></div>
+
+<section class="slip" id="slip" hidden aria-label="order">
+  <div class="sliphead"><div class="wrap">
+    <div>
+      <div class="sliptitle" id="sliptitle"></div>
+      <div class="slipshow" id="slipshow"></div>
+    </div>
+    <button type="button" class="tri" id="closeslip"></button>
+  </div></div>
+  <div class="wrap slipbody">
+    <div id="slipitems"></div>
+    <div class="stot"><span id="stotlabel"></span><span class="n" id="stotval"></span></div>
+    <div class="note" id="slipnote"></div>
+    <div class="slipacts"><button type="button" id="clearcart"></button></div>
+  </div>
+</section>
 
 <script>
 (function () {
@@ -174,56 +209,74 @@
     ru: { brand:"Меню", hint:"Назовите официанту номер блюда", search:"Поиск: номер или название",
           tri:"3 языка", empty:"Ничего не найдено", found:"Найдено: ",
           foot:"Цены в рублях. Обновлено ", err:"Меню не загрузилось — попросите бумажное меню.",
+          order:"Заказ", openOrder:"Заказ →", close:"Закрыть", clear:"Очистить",
+          show:"Покажите этот экран официанту", total:"Предварительно", dishes:" блюд",
+          emptyCart:"Заказ пуст",
+          note:"Это предварительный расчёт. Официант принимает заказ, окончательный счёт считают на кассе.",
           tags:{spicy:"острое",hot3:"очень острое",offal:"субпродукты",sea:"морепродукты",peanut:"арахис",dairy:"молочное"} },
     vi: { brand:"Thực đơn", hint:"Đọc số hiệu món cho nhân viên", search:"Tìm: số hiệu hoặc tên món",
           tri:"3 thứ tiếng", empty:"Không tìm thấy món nào", found:"Tìm thấy: ",
           foot:"Giá tính bằng rúp. Cập nhật ", err:"Không tải được thực đơn — xin dùng menu giấy.",
+          order:"Phiếu gọi món", openOrder:"Xem phiếu →", close:"Đóng", clear:"Xoá hết",
+          show:"Đưa màn hình này cho nhân viên", total:"Tạm tính", dishes:" món",
+          emptyCart:"Chưa chọn món nào",
+          note:"Đây chỉ là tạm tính. Nhân viên là người nhận gọi món, hoá đơn cuối cùng do quầy thu ngân tính.",
           tags:{spicy:"cay",hot3:"rất cay",offal:"nội tạng",sea:"hải sản",peanut:"lạc",dairy:"sữa"} },
     zh: { brand:"菜单", hint:"向服务员报菜品编号", search:"搜索：编号或菜名",
           tri:"三语", empty:"未找到菜品", found:"找到：",
           foot:"价格以卢布计。更新于 ", err:"菜单加载失败 — 请使用纸质菜单。",
+          order:"点菜单", openOrder:"查看点菜单 →", close:"关闭", clear:"清空",
+          show:"请把此屏幕出示给服务员", total:"预估", dishes:" 道菜",
+          emptyCart:"未选择菜品",
+          note:"此为预估金额。由服务员正式点单，最终账单以收银台为准。",
           tags:{spicy:"辣",hot3:"特辣",offal:"内脏",sea:"海鲜",peanut:"花生",dairy:"奶制品"} }
   };
   var ORDER = ["ru","vi","zh"];
-  var lang = "ru", triple = false, data = null;
+  var lang = "ru", triple = false, data = null, index = {}, cart = {};
 
   try { var s = localStorage.getItem("menu.lang"); if (s && T[s]) lang = s; } catch (e) {}
+  try { var c = JSON.parse(localStorage.getItem("menu.cart") || "{}"); if (c && typeof c === "object") cart = c; } catch (e) {}
 
-  var $list = document.getElementById("list"),
-      $jump = document.getElementById("jump"),
-      $q    = document.getElementById("q"),
-      $tri  = document.getElementById("tri");
+  var $list = document.getElementById("list"), $jump = document.getElementById("jump"),
+      $q = document.getElementById("q"), $tri = document.getElementById("tri"),
+      $bar = document.getElementById("bar"), $slip = document.getElementById("slip");
 
   function esc(s){ return String(s).replace(/[&<>"]/g, function(c){
     return ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[c]; }); }
+  function money(v){ return String(v).replace(/\B(?=(\d{3})+(?!\d))/g, " ") + " " + data.currency; }
+  function saveCart(){ try { localStorage.setItem("menu.cart", JSON.stringify(cart)); } catch (e) {} }
 
-  function priceHTML(p){
-    var t = T[lang], out = "";
-    for (var i = 0; i < p.length; i++){
-      var lbl = p[i].s ? '<span class="sz">' + esc(data.sizeLabel[p[i].s][lang]) + '</span>' : "";
-      out += '<span class="two">' + p[i].a + ' ' + data.currency + lbl + '</span>';
-    }
-    return out;
+  function buyHTML(it, uid, pi){
+    var p = it.p[pi], q = cart[uid] || 0;
+    var lbl = p.s ? '<span class="sz">' + esc(data.sizeLabel[p.s][lang]) + '</span>' : "";
+    var ctl = q > 0
+      ? '<span class="step"><button type="button" data-uid="' + uid + '" data-d="-1" aria-label="-">&minus;</button>'
+        + '<span class="qty">' + q + '</span>'
+        + '<button type="button" data-uid="' + uid + '" data-d="1" aria-label="+">+</button></span>'
+      : '<button type="button" class="add" data-uid="' + uid + '" data-d="1" aria-label="+">+</button>';
+    return '<span class="pline"><span class="amt">' + money(p.a) + lbl + '</span>' + ctl + '</span>';
   }
 
-  function rowHTML(it){
+  function rowHTML(it, gid, ii){
     var t = T[lang], alt = "", i, o;
-    if (triple){
-      for (i = 0; i < ORDER.length; i++){ o = ORDER[i]; if (o !== lang) alt += (alt ? " · " : "") + esc(it[o]); }
-    }
+    if (triple) for (i = 0; i < ORDER.length; i++){ o = ORDER[i]; if (o !== lang) alt += (alt ? " · " : "") + esc(it[o]); }
     var tg = "";
     for (i = 0; i < it.t.length; i++){
       var k = it.t[i];
       tg += '<span class="tag t-' + (k === "hot3" ? "hot3" : k === "spicy" ? "hot" : k) + '">' + esc(t.tags[k]) + '</span>';
     }
-    return '<div class="row">'
+    var buys = "", picked = false;
+    for (i = 0; i < it.p.length; i++){
+      var uid = gid + "_" + ii + "_" + i;
+      if (cart[uid]) picked = true;
+      buys += buyHTML(it, uid, i);
+    }
+    return '<div class="row' + (picked ? " picked" : "") + '" data-row="' + gid + "_" + ii + '">'
       + '<div class="num">' + esc(it.n) + '</div>'
       + '<div class="nm"><div class="main">' + esc(it[lang]) + '</div>'
       + (alt ? '<div class="alt">' + alt + '</div>' : "")
       + (tg ? '<div class="tags">' + tg + '</div>' : "")
-      + '</div>'
-      + '<div class="price">' + priceHTML(it.p) + '</div>'
-      + '</div>';
+      + '</div><div class="buy">' + buys + '</div></div>';
   }
 
   function match(it, q){
@@ -231,6 +284,48 @@
     if (it.n.toLowerCase().indexOf(q) === 0) return true;
     for (var i = 0; i < ORDER.length; i++) if (it[ORDER[i]].toLowerCase().indexOf(q) > -1) return true;
     return false;
+  }
+
+  function cartLines(){
+    var out = [], uid, e;
+    for (uid in cart){ if (cart[uid] > 0 && index[uid]){ e = index[uid]; out.push({ uid:uid, q:cart[uid], it:e.it, p:e.p }); } }
+    return out;
+  }
+  function cartTotal(){ var L = cartLines(), s = 0, n = 0; for (var i = 0; i < L.length; i++){ s += L[i].p.a * L[i].q; n += L[i].q; } return { sum:s, n:n }; }
+
+  function dishWord(n){
+    if (lang !== "ru") return T[lang].dishes;
+    var a = n % 10, b = n % 100;
+    if (a === 1 && b !== 11) return " блюдо";
+    if (a >= 2 && a <= 4 && !(b >= 12 && b <= 14)) return " блюда";
+    return " блюд";
+  }
+
+  function renderBar(){
+    var t = T[lang], c = cartTotal();
+    document.getElementById("openslip").textContent = t.openOrder;
+    if (!c.n){ $bar.hidden = true; return; }
+    $bar.hidden = false;
+    document.getElementById("barcnt").textContent = c.n + dishWord(c.n);
+    document.getElementById("barsum").textContent = money(c.sum);
+  }
+
+  function renderSlip(){
+    var t = T[lang], L = cartLines(), html = "";
+    document.getElementById("sliptitle").textContent = t.order;
+    document.getElementById("slipshow").textContent = t.show;
+    document.getElementById("closeslip").textContent = t.close;
+    document.getElementById("clearcart").textContent = t.clear;
+    document.getElementById("stotlabel").textContent = t.total;
+    document.getElementById("slipnote").textContent = t.note;
+    for (var i = 0; i < L.length; i++){
+      var e = L[i], sz = e.p.s ? " · " + esc(data.sizeLabel[e.p.s][lang]) : "";
+      html += '<div class="sline"><div class="sn">' + esc(e.it.n) + '</div>'
+            + '<div><div>' + esc(e.it[lang]) + '</div><div class="sq">' + e.q + ' × ' + money(e.p.a) + sz + '</div></div>'
+            + '<div class="sp">' + money(e.p.a * e.q) + '</div></div>';
+    }
+    document.getElementById("slipitems").innerHTML = html || '<div class="empty">' + esc(t.emptyCart) + '</div>';
+    document.getElementById("stotval").textContent = money(cartTotal().sum);
   }
 
   function render(){
@@ -250,20 +345,54 @@
     for (var g = 0; g < data.groups.length; g++){
       var grp = data.groups[g], rows = "", n = 0;
       for (var k = 0; k < grp.items.length; k++){
-        if (match(grp.items[k], q)){ rows += rowHTML(grp.items[k]); n++; }
+        if (match(grp.items[k], q)){ rows += rowHTML(grp.items[k], grp.id, k); n++; }
       }
       if (!n) continue;
       shown += n;
-      html += '<section id="' + grp.id + '"><h2 class="ghead">' + esc(grp.name[lang]) + '</h2>'
-            + '<div class="rows">' + rows + '</div></section>';
+      html += '<section id="' + grp.id + '"><h2 class="ghead">' + esc(grp.name[lang]) + '</h2><div class="rows">' + rows + '</div></section>';
       nav += '<a href="#' + grp.id + '">' + esc(grp.name[lang]) + '</a>';
     }
     $list.innerHTML = shown ? html : '<div class="empty">' + esc(t.empty) + '</div>';
     $jump.innerHTML = q ? "" : nav;
-    document.getElementById("foot").textContent =
-      (q ? t.found + shown + " · " : "") + t.foot + data.updated;
+    document.getElementById("foot").textContent = (q ? t.found + shown + " · " : "") + t.foot + data.updated;
+    renderBar();
+    if (!$slip.hidden) renderSlip();
   }
 
+  function bump(uid, d){
+    var e = index[uid]; if (!e) return;
+    var q = (cart[uid] || 0) + d;
+    if (q <= 0) delete cart[uid]; else cart[uid] = q;
+    saveCart();
+    var rowKey = uid.slice(0, uid.lastIndexOf("_"));
+    var row = $list.querySelector('[data-row="' + rowKey + '"]');
+    if (row){
+      var buys = "", picked = false;
+      for (var i = 0; i < e.it.p.length; i++){
+        var u = rowKey + "_" + i;
+        if (cart[u]) picked = true;
+        buys += buyHTML(e.it, u, i);
+      }
+      row.querySelector(".buy").innerHTML = buys;
+      if (picked) row.classList.add("picked"); else row.classList.remove("picked");
+    }
+    renderBar();
+    if (!$slip.hidden) renderSlip();
+  }
+
+  $list.addEventListener("click", function (ev){
+    var b = ev.target.closest("button[data-uid]"); if (!b) return;
+    bump(b.getAttribute("data-uid"), Number(b.getAttribute("data-d")));
+  });
+  document.getElementById("openslip").addEventListener("click", function (){
+    renderSlip(); $slip.hidden = false; document.body.style.overflow = "hidden";
+  });
+  document.getElementById("closeslip").addEventListener("click", function (){
+    $slip.hidden = true; document.body.style.overflow = "";
+  });
+  document.getElementById("clearcart").addEventListener("click", function (){
+    cart = {}; saveCart(); $slip.hidden = true; document.body.style.overflow = ""; render();
+  });
   for (var i = 0; i < ORDER.length; i++){
     (function (o){
       document.getElementById("lang-" + o).addEventListener("click", function (){
@@ -277,7 +406,18 @@
   render();
   fetch("menu.json")
     .then(function (r){ if (!r.ok) throw 0; return r.json(); })
-    .then(function (j){ data = j; render(); })
+    .then(function (j){
+      data = j; index = {};
+      for (var g = 0; g < j.groups.length; g++){
+        var grp = j.groups[g];
+        for (var k = 0; k < grp.items.length; k++){
+          var it = grp.items[k];
+          for (var p = 0; p < it.p.length; p++) index[grp.id + "_" + k + "_" + p] = { it:it, p:it.p[p] };
+        }
+      }
+      for (var uid in cart) if (!index[uid]) delete cart[uid];
+      render();
+    })
     .catch(function (){ $list.innerHTML = '<div class="empty">' + esc(T[lang].err) + '</div>'; });
 })();
 </script>
