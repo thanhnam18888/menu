@@ -92,6 +92,13 @@
   .row + .row{border-top:1px solid var(--line-soft)}
   .row.picked{background:var(--accent-soft)}
   .num{font-variant-numeric:tabular-nums; font-weight:700; font-size:13.5px; color:var(--accent); text-align:center; padding-top:1px; border-right:1px solid var(--line-soft); align-self:stretch}
+  .row.haspic{grid-template-columns:46px 58px 1fr auto}
+  .pic{width:58px; height:58px; border-radius:8px; object-fit:cover; display:block; background:var(--line-soft); cursor:zoom-in; border:0; padding:0}
+  .lb{position:fixed; inset:0; background:rgba(0,0,0,.94); display:none; align-items:center; justify-content:center; flex-direction:column; gap:14px; padding:20px; z-index:90}
+  .lb.on{display:flex}
+  .lb img{max-width:min(92vw,520px); max-height:70vh; border-radius:12px; object-fit:contain}
+  .lb .cap{color:#fff; font-size:15px; text-align:center; max-width:min(92vw,520px)}
+  .lb .cap b{color:var(--accent)}
   .nm{min-width:0}
   .nm .main{font-size:14.5px; overflow-wrap:anywhere}
   .nm .alt{font-size:12.5px; color:var(--muted); margin-top:2px; overflow-wrap:anywhere}
@@ -184,6 +191,8 @@
 
   @media (max-width:380px){
     .row{grid-template-columns:44px 1fr auto; gap:8px}
+    .row.haspic{grid-template-columns:40px 52px 1fr auto; gap:8px}
+    .pic{width:52px; height:52px}
     .brand{font-size:17px}
   }
   @media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
@@ -258,6 +267,8 @@
   <div class="kstat">Chép số món ra giấy đưa bếp, rồi bấm “Đã chép”.</div>
   <div id="korders"></div>
 </section>
+
+<div class="lb" id="lb"><img id="lbimg" src="" alt=""><div class="cap" id="lbcap"></div></div>
 
 <script>
 (function () {
@@ -348,8 +359,13 @@
       if (cart[uid]) picked = true;
       buys += buyHTML(it, uid, i);
     }
-    return '<div class="row' + (picked ? " picked" : "") + '" data-row="' + gid + "_" + ii + '">'
+    var pic = it.img
+      ? '<img class="pic" src="img/' + esc(it.img) + '" alt="" loading="lazy" decoding="async"'
+        + ' data-pic="' + esc(it.img) + '" data-n="' + esc(it.n) + '" data-nm="' + esc(it[lang]) + '">'
+      : "";
+    return '<div class="row' + (picked ? " picked" : "") + (pic ? " haspic" : "") + '" data-row="' + gid + "_" + ii + '">'
       + '<div class="num">' + esc(it.n) + '</div>'
+      + pic
       + '<div class="nm"><div class="main">' + esc(it[lang]) + '</div>'
       + (alt ? '<div class="alt">' + alt + '</div>' : "")
       + (tg ? '<div class="tags">' + tg + '</div>' : "")
@@ -468,8 +484,23 @@
   }
 
   $list.addEventListener("click", function (ev){
+    var im = ev.target.closest("img[data-pic]");
+    if (im){ openPic(im); return; }
     var b = ev.target.closest("button[data-uid]"); if (!b) return;
     bump(b.getAttribute("data-uid"), Number(b.getAttribute("data-d")));
+  });
+
+  var $lb = document.getElementById("lb");
+  function openPic(im){
+    document.getElementById("lbimg").src = "img/" + im.getAttribute("data-pic");
+    document.getElementById("lbcap").innerHTML =
+      "<b>" + esc(im.getAttribute("data-n")) + "</b> · " + esc(im.getAttribute("data-nm"));
+    $lb.classList.add("on"); document.body.style.overflow = "hidden";
+  }
+  $lb.addEventListener("click", function (){
+    $lb.classList.remove("on");
+    document.getElementById("lbimg").src = "";
+    if ($slip.hidden) document.body.style.overflow = "";
   });
   document.getElementById("openslip").addEventListener("click", function (){
     renderSlip(); $slip.hidden = false; document.body.style.overflow = "hidden";
@@ -549,25 +580,18 @@
     if (!(tbl > 0 && tbl < 100)){ msg.className = "msg bad"; msg.textContent = t.needTable; return; }
     btn.disabled = true; msg.className = "msg"; msg.textContent = t.sending;
 
-    var jobs = api ? [{ name:"Telegram", p: sendApi(tbl, L, total) }]
-                   : [{ name:"kho đơn", p: sendDb(tbl, L, total) }];
+    var job = api ? sendApi(tbl, L, total) : sendDb(tbl, L, total);
 
-    Promise.all(jobs.map(function (j){
-      return j.p.then(function (){ return { n:j.name, ok:true }; },
-                      function (){ return { n:j.name, ok:false }; });
-    })).then(function (res){
-      var okList = res.filter(function (r){ return r.ok; }).map(function (r){ return r.n; });
-      var bad = res.filter(function (r){ return !r.ok; }).map(function (r){ return r.n; });
+    job.then(function (){
       btn.disabled = false;
-      if (!okList.length){
-        msg.className = "msg bad"; msg.textContent = t.sentErr + " (" + bad.join(", ") + ")";
-        return;
-      }
       cart = {}; saveCart(); render(); renderSlip();
       var m = document.getElementById("sendmsg");
       m.className = "msg ok";
-      m.textContent = t.sentOk + " ✓ " + okList.join(", ")
-                    + (bad.length ? " · ✗ " + bad.join(", ") : "");
+      m.textContent = t.sentOk + " ✓";
+    }, function (){
+      btn.disabled = false;
+      msg.className = "msg bad";
+      msg.textContent = t.sentErr;
     });
   });
 
@@ -678,3 +702,4 @@
 </script>
 </body>
 </html>
+
