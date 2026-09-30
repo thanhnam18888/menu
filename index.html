@@ -94,6 +94,9 @@
   .num{font-variant-numeric:tabular-nums; font-weight:700; font-size:13.5px; color:var(--accent); text-align:center; padding-top:1px; border-right:1px solid var(--line-soft); align-self:stretch}
   .row.haspic{grid-template-columns:46px 58px 1fr auto}
   .pic{width:58px; height:58px; border-radius:8px; object-fit:cover; display:block; background:var(--line-soft); cursor:zoom-in; border:0; padding:0}
+  .ocode{margin-top:12px; padding:16px 14px; border:2px solid var(--accent); border-radius:12px; text-align:center; background:var(--accent-soft)}
+  .ocode-n{font-size:52px; font-weight:800; line-height:1.05; letter-spacing:2px; color:var(--accent); font-variant-numeric:tabular-nums}
+  .ocode-h{font-size:13.5px; margin-top:6px}
   .lb{position:fixed; inset:0; background:rgba(0,0,0,.94); display:none; align-items:center; justify-content:center; flex-direction:column; gap:14px; padding:20px; z-index:90}
   .lb.on{display:flex}
   .lb img{max-width:min(92vw,520px); max-height:70vh; border-radius:12px; object-fit:contain}
@@ -255,6 +258,10 @@
         <button type="button" class="go" id="sendgo"></button>
       </div>
       <div class="msg" id="sendmsg"></div>
+      <div class="ocode" id="ordercode" hidden>
+        <div class="ocode-n" id="ordercodenum"></div>
+        <div class="ocode-h" id="ordercodehint"></div>
+      </div>
     </div>
   </div>
 </section>
@@ -283,6 +290,7 @@
           sendlbl:"Отправить заказ на кассу — укажите номер стола",
           sendlblFixed:"Отправить заказ на кассу", tblWord:"Стол",
           send:"Отправить", sending:"Отправка…", needTable:"Укажите номер стола",
+          codeHint:"Покажите этот номер официанту",
           sentOk:"Заказ отправлен. Официант подойдёт к столу.", sentErr:"Не отправилось. Позовите официанта.",
           tags:{spicy:"острое",hot3:"очень острое",offal:"субпродукты",sea:"морепродукты",peanut:"арахис",dairy:"молочное"} },
     vi: { brand:"Thực đơn", hint:"Đọc số hiệu món cho nhân viên", search:"Tìm: số hiệu hoặc tên món",
@@ -295,6 +303,7 @@
           sendlbl:"Gửi đơn về quầy — nhập số bàn",
           sendlblFixed:"Gửi đơn về quầy", tblWord:"Bàn",
           send:"Gửi đơn", sending:"Đang gửi…", needTable:"Nhập số bàn",
+          codeHint:"Đưa số này cho nhân viên xem",
           sentOk:"Đã gửi. Nhân viên sẽ ra bàn.", sentErr:"Gửi không được. Gọi nhân viên giúp.",
           tags:{spicy:"cay",hot3:"rất cay",offal:"nội tạng",sea:"hải sản",peanut:"lạc",dairy:"sữa"} },
     zh: { brand:"菜单", hint:"向服务员报菜品编号", search:"搜索：编号或菜名",
@@ -307,6 +316,7 @@
           sendlbl:"发送到收银台 — 请填写桌号",
           sendlblFixed:"发送到收银台", tblWord:"",
           send:"发送", sending:"发送中…", needTable:"请填写桌号",
+          codeHint:"请把这个号码给服务员看",
           sentOk:"已发送，服务员马上过来。", sentErr:"发送失败，请叫服务员。",
           tags:{spicy:"辣",hot3:"特辣",offal:"内脏",sea:"海鲜",peanut:"花生",dairy:"奶制品"} }
   };
@@ -558,7 +568,7 @@
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ban: tbl, items: items, total: total, lang: lang, key: api.key || "" })
     }).then(function (r){ return r.json().catch(function (){ return null; }); })
-      .then(function (j){ if (!j || !j.ok) throw new Error("api"); });
+      .then(function (j){ if (!j || !j.ok) throw new Error("api"); return j.code || null; });
   }
 
   function sendDb(tbl, L, total){
@@ -582,12 +592,19 @@
 
     var job = api ? sendApi(tbl, L, total) : sendDb(tbl, L, total);
 
-    job.then(function (){
+    job.then(function (code){
       btn.disabled = false;
       cart = {}; saveCart(); render(); renderSlip();
       var m = document.getElementById("sendmsg");
       m.className = "msg ok";
       m.textContent = t.sentOk + " ✓";
+      var box = document.getElementById("ordercode");
+      if (code){
+        document.getElementById("ordercodenum").textContent = code;
+        document.getElementById("ordercodehint").textContent = t.codeHint;
+        box.hidden = false;
+        box.scrollIntoView({ block: "center", behavior: "smooth" });
+      } else { box.hidden = true; }
     }, function (){
       btn.disabled = false;
       msg.className = "msg bad";
