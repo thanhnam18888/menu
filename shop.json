@@ -1,0 +1,21 @@
+{
+  "_": "Thong tin quan cho phan dat hang online. Sua truc tiep file nay roi chay push.sh.",
+
+  "addr": "Москва, ул. Академика Королёва, 28к1",
+  "phone": "",
+
+  "open": "11:00",
+  "close": "23:00",
+
+  "prepMin": 45,
+
+  "minOrder": 0,
+  "deliveryFee": null,
+  "freeFrom": null,
+
+  "zone": {
+    "ru": "",
+    "vi": "",
+    "zh": ""
+  }
+}

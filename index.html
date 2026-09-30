@@ -161,14 +161,52 @@
   /* ---- send order ---- */
   .send{margin-top:18px; border-top:1px solid var(--line); padding-top:16px}
   .send .fieldrow{display:flex; gap:8px; align-items:stretch}
-  .send input{width:110px; font:700 17px/1 var(--sans); text-align:center; color:var(--ink); background:var(--surface); border:1px solid var(--line); border-radius:9px; padding:12px 8px}
-  .send input:focus{outline:2px solid var(--accent); outline-offset:-1px}
+  .send #table{width:110px; font:700 17px/1 var(--sans); text-align:center; color:var(--ink); background:var(--surface); border:1px solid var(--line); border-radius:9px; padding:12px 8px}
+  .send #table:focus{outline:2px solid var(--accent); outline-offset:-1px}
   .send .go{flex:1 1 auto; appearance:none; cursor:pointer; font:700 15px/1 var(--sans); border:0; border-radius:9px; background:var(--accent); color:var(--on-accent); padding:13px 16px}
   .send .go[disabled]{opacity:.55; cursor:default}
   .send .lbl{font-size:12.5px; color:var(--muted); margin-bottom:6px}
   .send .msg{margin-top:10px; font-size:13px; font-weight:600}
   .ok{color:#1E7A4B} :root[data-theme="dark"] .ok,:root:not([data-theme="light"]) .ok{color:#6FD3A0}
   .bad{color:var(--hot)}
+
+  /* ---- đặt hàng online ---- */
+  .modeseg{display:flex; gap:6px; margin-bottom:12px}
+  .modeseg button{flex:1 1 0; appearance:none; cursor:pointer; border:1px solid var(--line);
+    background:var(--surface); color:var(--chip-ink); font:600 13.5px/1.3 var(--sans);
+    padding:12px 8px; border-radius:9px; text-align:center}
+  .modeseg button[aria-pressed="true"]{border-color:var(--accent); background:var(--accent); color:var(--on-accent)}
+  .modeseg button:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+  .shopinfo{background:var(--chip); color:var(--chip-ink); border-radius:9px; padding:10px 12px;
+    font-size:12.5px; line-height:1.6; margin-bottom:12px}
+  .shopinfo b{color:var(--ink)}
+  .fld{margin-bottom:10px}
+  .fld > label{display:block; font-size:12px; color:var(--muted); margin-bottom:4px}
+  .fld input,.fld textarea,.fld select{width:100%; font:400 15px/1.35 var(--sans); color:var(--ink);
+    background:var(--surface); border:1px solid var(--line); border-radius:9px; padding:11px}
+  .fld textarea{resize:vertical; min-height:58px}
+  .fld input:focus,.fld textarea:focus,.fld select:focus{outline:2px solid var(--accent); outline-offset:-1px; border-color:transparent}
+  .fld.wrong input,.fld.wrong textarea{border-color:var(--hot)}
+  .fld .err{font-size:11.5px; color:var(--hot); margin-top:3px; display:none}
+  .fld.wrong .err{display:block}
+  .two{display:flex; gap:8px}
+  .two > .fld{flex:1 1 0; min-width:0}
+
+  /* ---- đơn đã gọi (gọi thêm món tại bàn) ---- */
+  .already{border:1px solid var(--accent); border-radius:10px; padding:12px 13px; margin-bottom:14px; background:var(--accent-soft)}
+  .already-h{display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin-bottom:8px}
+  .already-t{font-weight:700; font-size:13.5px; color:var(--accent-ink)}
+  .already-c{font-variant-numeric:tabular-nums; font-weight:800; font-size:17px; color:var(--accent); white-space:nowrap}
+  .aline{display:grid; grid-template-columns:auto 1fr auto; gap:10px; align-items:baseline; padding-block:5px; font-size:13px; color:var(--accent-ink)}
+  .aline + .aline{border-top:1px solid rgba(163,46,36,.16)}
+  .aline .an{font-variant-numeric:tabular-nums; font-weight:700; min-width:34px}
+  .aline .aq{font-variant-numeric:tabular-nums; white-space:nowrap}
+  .already-tot{display:flex; justify-content:space-between; gap:10px; margin-top:9px; padding-top:8px;
+    border-top:1px solid rgba(163,46,36,.3); font-size:13.5px; font-weight:700; color:var(--accent-ink)}
+  .linkbtn{appearance:none; border:0; background:transparent; color:var(--accent-ink); text-decoration:underline;
+    font:500 12.5px/1.3 var(--sans); padding:8px 0 0; cursor:pointer}
+  .linkbtn:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+  .addnote{font-size:12.5px; color:var(--muted); margin-bottom:8px}
 
   /* ---- kassa ---- */
   .kwrap{max-width:var(--wrap); margin:0 auto; padding-inline:16px; padding-block:14px 60px}
@@ -246,12 +284,55 @@
     <button type="button" class="tri" id="closeslip"></button>
   </div></div>
   <div class="wrap slipbody">
+    <div class="already" id="already" hidden>
+      <div class="already-h">
+        <span class="already-t" id="already-t"></span>
+        <span class="already-c" id="already-code"></span>
+      </div>
+      <div id="already-list"></div>
+      <div class="already-tot"><span id="already-tl"></span><span id="already-tv"></span></div>
+      <button type="button" class="linkbtn" id="newsess"></button>
+    </div>
+    <div class="addnote" id="addnote" hidden></div>
     <div id="slipitems"></div>
     <div class="stot"><span id="stotlabel"></span><span class="n" id="stotval"></span></div>
     <div class="note" id="slipnote"></div>
     <div class="slipacts"><button type="button" id="clearcart"></button></div>
     <div class="send" id="send" hidden>
       <div class="lbl" id="sendlbl"></div>
+
+      <div class="modeseg" id="modeseg" hidden role="group">
+        <button type="button" data-mode="dlv"  aria-pressed="true"></button>
+        <button type="button" data-mode="pick" aria-pressed="false"></button>
+      </div>
+      <div class="shopinfo" id="shopinfo" hidden></div>
+
+      <div id="onlineform" hidden>
+        <div class="fld" id="f-name">
+          <label for="i-name"></label>
+          <input id="i-name" type="text" autocomplete="name" maxlength="40">
+          <div class="err"></div>
+        </div>
+        <div class="fld" id="f-phone">
+          <label for="i-phone"></label>
+          <input id="i-phone" type="tel" inputmode="tel" autocomplete="tel" maxlength="24">
+          <div class="err"></div>
+        </div>
+        <div class="fld" id="f-addr">
+          <label for="i-addr"></label>
+          <textarea id="i-addr" autocomplete="street-address" maxlength="120"></textarea>
+          <div class="err"></div>
+        </div>
+        <div class="two">
+          <div class="fld" id="f-when"><label for="i-when"></label><select id="i-when"></select></div>
+          <div class="fld" id="f-pay"><label for="i-pay"></label><select id="i-pay"></select></div>
+        </div>
+        <div class="fld" id="f-note">
+          <label for="i-note"></label>
+          <input id="i-note" type="text" maxlength="80">
+        </div>
+      </div>
+
       <div class="fixedtable" id="fixedtable" hidden></div>
       <div class="fieldrow">
         <input id="table" type="number" inputmode="numeric" min="1" max="99" step="1" placeholder="№">
@@ -292,6 +373,28 @@
           send:"Отправить", sending:"Отправка…", needTable:"Укажите номер стола",
           codeHint:"Покажите этот номер официанту",
           sentOk:"Заказ отправлен. Официант подойдёт к столу.", sentErr:"Не отправилось. Позовите официанта.",
+          already:"Вы уже заказали", allTotal:"Всего по столу", addMore:"Дозаказать",
+          addNote:"Выберите блюда — они добавятся к заказу, который вы уже сделали.",
+          newSess:"Начать новый заказ", newSessAsk:"Точно? Список выше сотрётся",
+          sentAdd:"Добавлено к заказу. Официант подойдёт.",
+          codeHintAdd:"Номер заказа прежний — покажите его официанту",
+          hintOnline:"Доставка и самовывоз",
+          mDlv:"Доставка", mPick:"Самовывоз",
+          sendlblOnline:"Оформление заказа", sendOnline:"Заказать",
+          fName:"Ваше имя", phName:"Как к вам обращаться",
+          fPhone:"Телефон", phPhone:"+7 900 000-00-00",
+          fAddr:"Адрес доставки", phAddr:"улица, дом, квартира, подъезд, этаж",
+          fWhen:"Когда", fPay:"Оплата", fNote:"Комментарий", phNote:"необязательно",
+          whenAsap:"Как можно скорее", whenAt:"к ",
+          payCash:"Наличными", payCard:"Картой",
+          errName:"Укажите имя", errPhone:"Укажите телефон, например +7 916 123-45-67",
+          errAddr:"Укажите адрес доставки",
+          pickAt:"Забрать: ", openHrs:"Работаем ", prepTxt:"Готовим около ", minTxt:"Минимальный заказ ",
+          feeAsk:"Стоимость доставки подтвердит оператор по телефону.",
+          feeIs:"Доставка ", feeFree:" · бесплатно от ", minLow:"Минимальный заказ ",
+          noteOnline:"Это предварительный расчёт. Заказ вступает в силу после звонка оператора — он подтвердит состав, время и стоимость доставки. Оплата при получении.",
+          sentOkOnline:"Заказ принят. Мы перезвоним для подтверждения.",
+          codeHintOnline:"Назовите этот номер, когда мы позвоним",
           tags:{spicy:"острое",hot3:"очень острое",offal:"субпродукты",sea:"морепродукты",peanut:"арахис",dairy:"молочное"} },
     vi: { brand:"Thực đơn", hint:"Đọc số hiệu món cho nhân viên", search:"Tìm: số hiệu hoặc tên món",
           tri:"3 thứ tiếng", empty:"Không tìm thấy món nào", found:"Tìm thấy: ",
@@ -305,6 +408,28 @@
           send:"Gửi đơn", sending:"Đang gửi…", needTable:"Nhập số bàn",
           codeHint:"Đưa số này cho nhân viên xem",
           sentOk:"Đã gửi. Nhân viên sẽ ra bàn.", sentErr:"Gửi không được. Gọi nhân viên giúp.",
+          already:"Đã gọi", allTotal:"Tổng cả bàn", addMore:"Gọi thêm",
+          addNote:"Chọn món — sẽ được thêm vào đơn bạn đã gọi.",
+          newSess:"Bắt đầu đơn mới", newSessAsk:"Chắc chưa? Danh sách trên sẽ mất",
+          sentAdd:"Đã thêm vào đơn. Nhân viên sẽ ra bàn.",
+          codeHintAdd:"Mã đơn vẫn như cũ — đưa cho nhân viên xem",
+          hintOnline:"Giao tận nơi hoặc tự đến lấy",
+          mDlv:"Giao tận nơi", mPick:"Tự đến lấy",
+          sendlblOnline:"Thông tin nhận hàng", sendOnline:"Đặt hàng",
+          fName:"Tên của bạn", phName:"Xưng hô thế nào",
+          fPhone:"Số điện thoại", phPhone:"+7 900 000-00-00",
+          fAddr:"Địa chỉ giao", phAddr:"đường, số nhà, căn hộ, cửa, tầng",
+          fWhen:"Lúc nào", fPay:"Thanh toán", fNote:"Ghi chú", phNote:"không bắt buộc",
+          whenAsap:"Càng sớm càng tốt", whenAt:"lúc ",
+          payCash:"Tiền mặt", payCard:"Thẻ",
+          errName:"Nhập tên", errPhone:"Nhập số điện thoại, ví dụ +7 916 123-45-67",
+          errAddr:"Nhập địa chỉ giao",
+          pickAt:"Đến lấy tại: ", openHrs:"Mở cửa ", prepTxt:"Nấu khoảng ", minTxt:"Đơn tối thiểu ",
+          feeAsk:"Phí giao sẽ được nhân viên báo khi gọi xác nhận.",
+          feeIs:"Phí giao ", feeFree:" · miễn phí từ ", minLow:"Đơn tối thiểu ",
+          noteOnline:"Đây chỉ là tạm tính. Đơn chỉ có hiệu lực sau khi quán gọi xác nhận món, giờ và phí giao. Trả tiền khi nhận hàng.",
+          sentOkOnline:"Đã nhận đơn. Quán sẽ gọi lại để xác nhận.",
+          codeHintOnline:"Đọc số này khi quán gọi cho bạn",
           tags:{spicy:"cay",hot3:"rất cay",offal:"nội tạng",sea:"hải sản",peanut:"lạc",dairy:"sữa"} },
     zh: { brand:"菜单", hint:"向服务员报菜品编号", search:"搜索：编号或菜名",
           tri:"三语", empty:"未找到菜品", found:"找到：",
@@ -318,6 +443,28 @@
           send:"发送", sending:"发送中…", needTable:"请填写桌号",
           codeHint:"请把这个号码给服务员看",
           sentOk:"已发送，服务员马上过来。", sentErr:"发送失败，请叫服务员。",
+          already:"已点", allTotal:"全桌合计", addMore:"加菜",
+          addNote:"选好菜品，将并入您已下的订单。",
+          newSess:"重新开单", newSessAsk:"确定？上面的列表会清空",
+          sentAdd:"已加入订单，服务员马上过来。",
+          codeHintAdd:"订单号不变，请出示给服务员",
+          hintOnline:"外送 / 自取",
+          mDlv:"外送", mPick:"自取",
+          sendlblOnline:"填写收货信息", sendOnline:"下单",
+          fName:"称呼", phName:"怎么称呼您",
+          fPhone:"电话", phPhone:"+7 900 000-00-00",
+          fAddr:"送餐地址", phAddr:"街道、门牌、房间、单元、楼层",
+          fWhen:"送达时间", fPay:"付款", fNote:"备注", phNote:"选填",
+          whenAsap:"尽快", whenAt:"",
+          payCash:"现金", payCard:"刷卡",
+          errName:"请填写称呼", errPhone:"请填写电话，例如 +7 916 123-45-67",
+          errAddr:"请填写送餐地址",
+          pickAt:"自取地址：", openHrs:"营业 ", prepTxt:"出餐约 ", minTxt:"起送 ",
+          feeAsk:"配送费由店员来电确认。",
+          feeIs:"配送费 ", feeFree:" · 满 ", minLow:"起送 ",
+          noteOnline:"此为预估金额。店员来电确认菜品、时间和配送费后订单方才生效。收货时付款。",
+          sentOkOnline:"已收到订单，我们会来电确认。",
+          codeHintOnline:"我们来电时请报这个号码",
           tags:{spicy:"辣",hot3:"特辣",offal:"内脏",sea:"海鲜",peanut:"花生",dairy:"奶制品"} }
   };
   var ORDER = ["ru","vi","zh"];
@@ -331,6 +478,54 @@
     return (n > 0 && n < 100) ? n : 0;
   })();
   function tableText(n){ return lang === "zh" ? (n + "号桌") : (T[lang].tblWord + " " + n); }
+
+  // ---- phiên của bàn: nhớ đơn đã gửi để lần sau gọi thêm ----
+  // Chỉ có ở chế độ quét QR trên bàn. Hết 6 tiếng thì tự quên,
+  // để bàn 3 hôm sau không thừa hưởng đơn của khách hôm trước.
+  var SESS_MS = 6 * 3600 * 1000;
+  var sess = null;
+  function loadSess(){
+    if (!TABLE) return;
+    try {
+      var s = JSON.parse(localStorage.getItem("menu.sess") || "null");
+      if (s && s.ban === TABLE && s.items && s.items.length && (Date.now() - s.ts) < SESS_MS) sess = s;
+      else if (s) localStorage.removeItem("menu.sess");
+    } catch (e) {}
+  }
+  function saveSess(){
+    try {
+      if (sess) localStorage.setItem("menu.sess", JSON.stringify(sess));
+      else localStorage.removeItem("menu.sess");
+    } catch (e) {}
+  }
+  function sessTotal(){
+    var s = 0; if (sess) for (var i = 0; i < sess.items.length; i++) s += sess.items[i].a * sess.items[i].q;
+    return s;
+  }
+  // Gộp giỏ hiện tại vào danh sách đã gọi (cùng uid thì cộng số lượng).
+  function foldIn(list, L){
+    for (var i = 0; i < L.length; i++){
+      var e = L[i], f = null;
+      for (var j = 0; j < list.length; j++) if (list[j].uid === e.uid){ f = list[j]; break; }
+      if (f) f.q += e.q;
+      else list.push({ uid:e.uid, n:e.it.n, q:e.q, s:e.p.s || "", a:e.p.a, nm:e.it.vi });
+    }
+    return list;
+  }
+  // Danh sách cả bàn SAU khi thêm giỏ này — gửi kèm để quầy thấy toàn bộ đơn.
+  function projectAll(L){
+    var base = (sess ? sess.items : []).map(function (x){
+      return { uid:x.uid, n:x.n, q:x.q, s:x.s, a:x.a, nm:x.nm };
+    });
+    return foldIn(base, L).map(function (x){ return { n:x.n, q:x.q, s:x.s, nm:x.nm }; });
+  }
+  loadSess();
+
+  // Khong co ?ban= trong dia chi -> khach dat tu xa (ban online).
+  var ONLINE = !TABLE && !KASSA;
+  var omode = "dlv";                 // "dlv" giao tan noi | "pick" tu den lay
+  var shop = null;                   // noi dung shop.json
+  try { var om = localStorage.getItem("menu.omode"); if (om === "dlv" || om === "pick") omode = om; } catch (e) {}
 
   try { var s = localStorage.getItem("menu.lang"); if (s && T[s]) lang = s; } catch (e) {}
   try { var c = JSON.parse(localStorage.getItem("menu.cart") || "{}"); if (c && typeof c === "object") cart = c; } catch (e) {}
@@ -407,7 +602,16 @@
   function renderBar(){
     var t = T[lang], c = cartTotal();
     document.getElementById("openslip").textContent = t.openOrder;
-    if (!c.n){ $bar.hidden = true; return; }
+    if (!c.n){
+      // Giỏ rỗng nhưng bàn đã có đơn: vẫn giữ thanh dưới để khách bấm vào xem đơn cũ.
+      if (sess){
+        $bar.hidden = false;
+        document.getElementById("barcnt").textContent = t.already + (sess.code ? "  № " + sess.code : "");
+        document.getElementById("barsum").textContent = data ? money(sessTotal()) : String(sessTotal());
+        return;
+      }
+      $bar.hidden = true; return;
+    }
     $bar.hidden = false;
     document.getElementById("barcnt").textContent = c.n + dishWord(c.n);
     document.getElementById("barsum").textContent = money(c.sum);
@@ -416,11 +620,11 @@
   function renderSlip(){
     var t = T[lang], L = cartLines(), html = "";
     document.getElementById("sliptitle").textContent = t.order;
-    document.getElementById("slipshow").textContent = t.show;
+    document.getElementById("slipshow").textContent = ONLINE ? "" : t.show;
     document.getElementById("closeslip").textContent = t.close;
     document.getElementById("clearcart").textContent = t.clear;
     document.getElementById("stotlabel").textContent = t.total;
-    document.getElementById("slipnote").textContent = t.note;
+    document.getElementById("slipnote").textContent = ONLINE ? t.noteOnline : t.note;
     for (var i = 0; i < L.length; i++){
       var e = L[i], sz = e.p.s ? " · " + esc(data.sizeLabel[e.p.s][lang]) : "";
       html += '<div class="sline"><div class="sn">' + esc(e.it.n) + '</div>'
@@ -429,19 +633,173 @@
     }
     document.getElementById("slipitems").innerHTML = html || '<div class="empty">' + esc(t.emptyCart) + '</div>';
     document.getElementById("stotval").textContent = money(cartTotal().sum);
-    document.getElementById("sendlbl").textContent = TABLE ? t.sendlblFixed : t.sendlbl;
-    document.getElementById("sendgo").textContent = t.send;
+    renderAlready();
+    document.getElementById("sendlbl").textContent =
+      ONLINE ? t.sendlblOnline : (TABLE ? t.sendlblFixed : t.sendlbl);
+    document.getElementById("sendgo").textContent =
+      ONLINE ? t.sendOnline : (sess ? t.addMore : t.send);
     document.getElementById("sendgo").disabled = !L.length;
-    document.getElementById("table").hidden = !!TABLE;
+    document.getElementById("table").hidden = ONLINE || !!TABLE;
     var ft = document.getElementById("fixedtable");
     ft.hidden = !TABLE;
     if (TABLE) ft.textContent = tableText(TABLE);
+    document.getElementById("modeseg").hidden   = !ONLINE;
+    document.getElementById("onlineform").hidden = !ONLINE;
+    document.getElementById("shopinfo").hidden   = !ONLINE;
+    if (ONLINE) renderOnline();
+  }
+
+  // ---------------- khối "đã gọi" ở đầu phiếu ----------------
+  function renderAlready(){
+    var box = document.getElementById("already"), an = document.getElementById("addnote");
+    if (!sess){ box.hidden = true; an.hidden = true; return; }
+    var t = T[lang], html = "";
+    for (var i = 0; i < sess.items.length; i++){
+      var x = sess.items[i];
+      var e = index[x.uid];
+      var nm = e ? e.it[lang] : x.nm;
+      var sz = x.s && data && data.sizeLabel ? " · " + data.sizeLabel[x.s][lang] : "";
+      html += '<div class="aline"><span class="an">' + esc(x.n) + '</span>'
+            + '<span>' + esc(nm) + esc(sz) + '</span>'
+            + '<span class="aq">×' + x.q + '</span></div>';
+    }
+    document.getElementById("already-t").textContent    = t.already;
+    document.getElementById("already-code").textContent = sess.code ? ("№ " + sess.code) : "";
+    document.getElementById("already-list").innerHTML   = html;
+    document.getElementById("already-tl").textContent   = t.allTotal;
+    document.getElementById("already-tv").textContent   = data ? money(sessTotal()) : String(sessTotal());
+    var nb = document.getElementById("newsess");
+    if (nb.dataset.armed !== "1") nb.textContent = t.newSess;
+    box.hidden = false;
+    an.textContent = t.addNote; an.hidden = false;
+  }
+
+  document.getElementById("newsess").addEventListener("click", function (){
+    var t = T[lang];
+    if (this.dataset.armed !== "1"){
+      this.dataset.armed = "1"; this.textContent = t.newSessAsk;
+      var b = this;
+      setTimeout(function (){ if (b.dataset.armed === "1"){ b.dataset.armed = ""; b.textContent = t.newSess; } }, 5000);
+      return;
+    }
+    this.dataset.armed = "";
+    sess = null; saveSess();
+    document.getElementById("ordercode").hidden = true;
+    document.getElementById("sendmsg").textContent = "";
+    renderSlip();
+  });
+
+  // ---------------- phần đặt hàng online ----------------
+  function rub(v){ return String(v).replace(/\B(?=(\d{3})+(?!\d))/g, " ") + " ₽"; }
+  function mskNow(){ var d = new Date(Date.now() + 3 * 3600 * 1000); return d.getUTCHours() * 60 + d.getUTCMinutes(); }
+  function hhmm(m){ m = ((m % 1440) + 1440) % 1440; return ("0" + Math.floor(m / 60)).slice(-2) + ":" + ("0" + (m % 60)).slice(-2); }
+  function parseHM(s){ var m = /^(\d{1,2}):(\d{2})$/.exec(String(s || "")); return m ? (+m[1]) * 60 + (+m[2]) : -1; }
+  function minWord(){ return lang === "ru" ? "мин" : lang === "vi" ? "phút" : "分钟"; }
+
+  function fillWhen(){
+    var t = T[lang], sel = document.getElementById("i-when"), keep = sel.value;
+    var prep = (shop && +shop.prepMin) || 45;
+    var close = parseHM(shop && shop.close); if (close < 0) close = 23 * 60;
+    var start = Math.ceil((mskNow() + prep) / 30) * 30;
+    var html = '<option value="asap">' + esc(t.whenAsap) + '</option>';
+    for (var m = start; m <= close - 30 && m < 1440; m += 30)
+      html += '<option value="' + hhmm(m) + '">' + esc(t.whenAt) + hhmm(m) + '</option>';
+    sel.innerHTML = html;
+    if (keep) sel.value = keep;
+    if (!sel.value) sel.value = "asap";
+  }
+
+  function shopInfoHTML(){
+    var t = T[lang], s = shop || {}, out = [];
+    if (omode === "pick" && s.addr) out.push(esc(t.pickAt) + "<b>" + esc(s.addr) + "</b>");
+    if (s.open && s.close)  out.push(esc(t.openHrs) + esc(s.open) + "–" + esc(s.close));
+    if (+s.prepMin)         out.push(esc(t.prepTxt) + (+s.prepMin) + " " + minWord());
+    if (omode === "dlv"){
+      if (s.deliveryFee === null || s.deliveryFee === undefined || s.deliveryFee === "") out.push(esc(t.feeAsk));
+      else out.push(esc(t.feeIs) + rub(+s.deliveryFee) + (+s.freeFrom ? esc(t.feeFree) + rub(+s.freeFrom) : ""));
+      var z = s.zone && s.zone[lang];
+      if (z) out.push(esc(z));
+    }
+    if (+s.minOrder) out.push(esc(t.minTxt) + rub(+s.minOrder));
+    if (s.phone)     out.push("<b>" + esc(s.phone) + "</b>");
+    return out.join("<br>");
+  }
+
+  function renderOnline(){
+    var t = T[lang], i;
+    var seg = document.getElementById("modeseg").querySelectorAll("button");
+    for (i = 0; i < seg.length; i++){
+      var md = seg[i].getAttribute("data-mode");
+      seg[i].textContent = md === "dlv" ? t.mDlv : t.mPick;
+      seg[i].setAttribute("aria-pressed", String(md === omode));
+    }
+    document.querySelector('label[for="i-name"]').textContent  = t.fName;
+    document.querySelector('label[for="i-phone"]').textContent = t.fPhone;
+    document.querySelector('label[for="i-addr"]').textContent  = t.fAddr;
+    document.querySelector('label[for="i-when"]').textContent  = t.fWhen;
+    document.querySelector('label[for="i-pay"]').textContent   = t.fPay;
+    document.querySelector('label[for="i-note"]').textContent  = t.fNote;
+    document.getElementById("i-name").placeholder  = t.phName;
+    document.getElementById("i-phone").placeholder = t.phPhone;
+    document.getElementById("i-addr").placeholder  = t.phAddr;
+    document.getElementById("i-note").placeholder  = t.phNote;
+    document.getElementById("f-name").querySelector(".err").textContent  = t.errName;
+    document.getElementById("f-phone").querySelector(".err").textContent = t.errPhone;
+    document.getElementById("f-addr").querySelector(".err").textContent  = t.errAddr;
+
+    document.getElementById("f-addr").hidden = (omode !== "dlv");
+
+    var pay = document.getElementById("i-pay"), keep = pay.value;
+    pay.innerHTML = '<option value="cash">' + esc(t.payCash) + '</option>'
+                  + '<option value="card">' + esc(t.payCard) + '</option>';
+    if (keep) pay.value = keep;
+
+    fillWhen();
+
+    var si = document.getElementById("shopinfo"), html = shopInfoHTML();
+    si.innerHTML = html;
+    si.hidden = !html;
+  }
+
+  function phoneDigits(v){
+    var d = String(v || "").replace(/[^0-9]/g, "");
+    if (d.length === 11 && d.charAt(0) === "8") d = "7" + d.slice(1);
+    if (d.length === 10) d = "7" + d;
+    return d;
+  }
+
+  // Tra ve null neu du lieu chua hop le (da to do o cho sai).
+  function readOnlineForm(){
+    var ok = true;
+    function mark(id, bad){
+      document.getElementById(id).classList[bad ? "add" : "remove"]("wrong");
+      if (bad) ok = false;
+    }
+    var name  = document.getElementById("i-name").value.trim();
+    var phone = document.getElementById("i-phone").value.trim();
+    var addr  = document.getElementById("i-addr").value.trim();
+    var dig   = phoneDigits(phone);
+
+    mark("f-name",  name.length < 2);
+    mark("f-phone", dig.length < 10 || dig.length > 15);
+    mark("f-addr",  omode === "dlv" && addr.length < 5);
+    if (!ok) return null;
+
+    return {
+      mode: omode,
+      name: name,
+      phone: "+" + dig,
+      addr: omode === "dlv" ? addr : "",
+      when: document.getElementById("i-when").value || "asap",
+      pay:  document.getElementById("i-pay").value || "cash",
+      note: document.getElementById("i-note").value.trim()
+    };
   }
 
   function render(){
     var t = T[lang];
     document.getElementById("brand").textContent = t.brand;
-    document.getElementById("hint").textContent  = t.hint;
+    document.getElementById("hint").textContent  = ONLINE ? t.hintOnline : t.hint;
     var chip = document.getElementById("tablechip");
     chip.hidden = !TABLE;
     if (TABLE) chip.textContent = tableText(TABLE);
@@ -557,16 +915,18 @@
   var api = null;
   var SZTXT = { L:" (tô lớn)", S:" (tô nhỏ)", whole:" (nguyên con)", half:" (nửa con)" };
 
-  function sendApi(tbl, L, total){
+  function sendApi(head, L, total){
     var items = L.slice().sort(function (a, b){
       return String(a.it.n).localeCompare(String(b.it.n), undefined, { numeric:true });
     }).map(function (e){
       return { n: e.it.n, q: e.q, s: e.p.s || "", nm: e.it.vi };
     });
+    var body = { items: items, total: total, lang: lang, key: api.key || "" };
+    for (var k in head) if (Object.prototype.hasOwnProperty.call(head, k)) body[k] = head[k];
     return fetch(api.url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ban: tbl, items: items, total: total, lang: lang, key: api.key || "" })
+      body: JSON.stringify(body)
     }).then(function (r){ return r.json().catch(function (){ return null; }); })
       .then(function (j){ if (!j || !j.ok) throw new Error("api"); return j.code || null; });
   }
@@ -581,27 +941,62 @@
     }).then(function (){});
   }
 
+  document.getElementById("modeseg").addEventListener("click", function (ev){
+    var b = ev.target.closest("button[data-mode]"); if (!b) return;
+    omode = b.getAttribute("data-mode");
+    try { localStorage.setItem("menu.omode", omode); } catch (e) {}
+    renderOnline();
+  });
+
   document.getElementById("sendgo").addEventListener("click", function (){
     var t = T[lang], msg = document.getElementById("sendmsg"), btn = this;
-    var tbl = TABLE || parseInt(document.getElementById("table").value, 10);
     var L = cartLines(), total = cartTotal().sum;
     if (!L.length) return;
     if (!api && !store) return;
-    if (!(tbl > 0 && tbl < 100)){ msg.className = "msg bad"; msg.textContent = t.needTable; return; }
+
+    var head, tbl = 0;
+    if (ONLINE){
+      head = readOnlineForm();
+      if (!head){ msg.className = "msg bad"; msg.textContent = ""; return; }
+      if (!api){ msg.className = "msg bad"; msg.textContent = t.sentErr; return; }
+    } else {
+      tbl = TABLE || parseInt(document.getElementById("table").value, 10);
+      if (!(tbl > 0 && tbl < 100)){ msg.className = "msg bad"; msg.textContent = t.needTable; return; }
+      head = { mode: "table", ban: tbl };
+      // Gọi thêm vào đơn đang có: giữ nguyên mã, gửi kèm toàn bộ đơn cả bàn.
+      if (sess && sess.ban === tbl){
+        head.seq    = (sess.seq || 1) + 1;
+        head.code   = sess.code;
+        head.all    = projectAll(L);
+        head.atotal = sessTotal() + total;
+      }
+    }
+
     btn.disabled = true; msg.className = "msg"; msg.textContent = t.sending;
 
-    var job = api ? sendApi(tbl, L, total) : sendDb(tbl, L, total);
+    var job = api ? sendApi(head, L, total) : sendDb(tbl, L, total);
+
+    var wasAdd = !ONLINE && !!(sess && sess.ban === tbl);
 
     job.then(function (code){
       btn.disabled = false;
+      // Mở / nối tiếp phiên của bàn để lần sau khách gọi thêm được.
+      if (!ONLINE && tbl){
+        if (!sess) sess = { ban: tbl, code: code || 0, seq: 1, items: [], ts: Date.now() };
+        else { sess.seq = (sess.seq || 1) + 1; if (code) sess.code = code; }
+        sess.items = foldIn(sess.items, L);
+        sess.ts = Date.now();
+        saveSess();
+      }
       cart = {}; saveCart(); render(); renderSlip();
       var m = document.getElementById("sendmsg");
       m.className = "msg ok";
-      m.textContent = t.sentOk + " ✓";
+      m.textContent = (ONLINE ? t.sentOkOnline : (wasAdd ? t.sentAdd : t.sentOk)) + " ✓";
       var box = document.getElementById("ordercode");
       if (code){
         document.getElementById("ordercodenum").textContent = code;
-        document.getElementById("ordercodehint").textContent = t.codeHint;
+        document.getElementById("ordercodehint").textContent =
+          ONLINE ? t.codeHintOnline : (wasAdd ? t.codeHintAdd : t.codeHint);
         box.hidden = false;
         box.scrollIntoView({ block: "center", behavior: "smooth" });
       } else { box.hidden = true; }
@@ -691,6 +1086,11 @@
   fetch("send.json" + FRESH)
     .then(function (r){ return r.ok ? r.json() : null; })
     .then(function (c){ if (c && c.url){ api = c; showSend(); } })
+    .catch(function (){});
+
+  fetch("shop.json" + FRESH)
+    .then(function (r){ return r.ok ? r.json() : null; })
+    .then(function (s){ if (s){ shop = s; if (!$slip.hidden) renderSlip(); } })
     .catch(function (){});
 
   useDb(function (d){
