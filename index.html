@@ -125,7 +125,7 @@
   .buy{display:flex; flex-direction:column; align-items:flex-end; gap:6px}
   .pline{display:flex; align-items:center; gap:8px}
   .amt{font-variant-numeric:tabular-nums; font-weight:700; font-size:14.5px; white-space:nowrap; text-align:right}
-  .amt .sz{display:block; font-weight:400; font-size:11px; color:var(--muted)}
+  .amt .sz{display:block; font-weight:400; font-size:11px; color:var(--muted); white-space:normal; max-width:8.5em; margin-left:auto}
   .step{display:flex; align-items:center; gap:2px}
   .step button,.add{
     appearance:none; cursor:pointer; font:700 17px/1 var(--sans);
@@ -397,7 +397,7 @@
           send:"Отправить", sending:"Отправка…", needTable:"Укажите номер стола",
           codeHint:"Покажите этот номер официанту",
           sentOk:"Заказ отправлен. Официант подойдёт к столу.", sentErr:"Не отправилось. Позовите официанта.",
-          already:"Вы уже заказали", allTotal:"Всего по столу", roundLbl:"Заказ {n}", roundNow:"Заказ {n} — выбираете сейчас", thisRound:"Этот заказ", addMore:"Дозаказать", addMoreBtn:"＋ Добавить ещё блюда", myOrder:"Мой заказ →",
+          askPrice:"по запросу", plusAsk:"+ блюда по запросу", already:"Вы уже заказали", allTotal:"Всего по столу", roundLbl:"Заказ {n}", roundNow:"Заказ {n} — выбираете сейчас", thisRound:"Этот заказ", addMore:"Дозаказать", addMoreBtn:"＋ Добавить ещё блюда", myOrder:"Мой заказ →",
           addNote:"Выберите блюда — они добавятся к заказу, который вы уже сделали.",
           newSess:"Начать новый заказ", newSessAsk:"Точно? Список выше сотрётся",
           sentAdd:"Добавлено к заказу. Официант подойдёт.",
@@ -432,7 +432,7 @@
           send:"Gửi đơn", sending:"Đang gửi…", needTable:"Nhập số bàn",
           codeHint:"Đưa số này cho nhân viên xem",
           sentOk:"Đã gửi. Nhân viên sẽ ra bàn.", sentErr:"Gửi không được. Gọi nhân viên giúp.",
-          already:"Đã gọi", allTotal:"Tổng cả bàn", roundLbl:"Lần {n}", roundNow:"Lần {n} — đang chọn", thisRound:"Lần này", addMore:"Gọi thêm", addMoreBtn:"＋ Gọi thêm món", myOrder:"Đơn đã gọi →",
+          askPrice:"hỏi giá", plusAsk:"+ món hỏi giá", already:"Đã gọi", allTotal:"Tổng cả bàn", roundLbl:"Lần {n}", roundNow:"Lần {n} — đang chọn", thisRound:"Lần này", addMore:"Gọi thêm", addMoreBtn:"＋ Gọi thêm món", myOrder:"Đơn đã gọi →",
           addNote:"Chọn món — sẽ được thêm vào đơn bạn đã gọi.",
           newSess:"Bắt đầu đơn mới", newSessAsk:"Chắc chưa? Danh sách trên sẽ mất",
           sentAdd:"Đã thêm vào đơn. Nhân viên sẽ ra bàn.",
@@ -467,7 +467,7 @@
           send:"发送", sending:"发送中…", needTable:"请填写桌号",
           codeHint:"请把这个号码给服务员看",
           sentOk:"已发送，服务员马上过来。", sentErr:"发送失败，请叫服务员。",
-          already:"已点", allTotal:"全桌合计", roundLbl:"第{n}次", roundNow:"第{n}次 — 正在选", thisRound:"本次", addMore:"加菜", addMoreBtn:"＋ 继续加菜", myOrder:"已点菜单 →",
+          askPrice:"时价", plusAsk:"+ 时价菜", already:"已点", allTotal:"全桌合计", roundLbl:"第{n}次", roundNow:"第{n}次 — 正在选", thisRound:"本次", addMore:"加菜", addMoreBtn:"＋ 继续加菜", myOrder:"已点菜单 →",
           addNote:"选好菜品，将并入您已下的订单。",
           newSess:"重新开单", newSessAsk:"确定？上面的列表会清空",
           sentAdd:"已加入订单，服务员马上过来。",
@@ -546,7 +546,7 @@
     var base = (sess ? sess.items : []).map(function (x){
       return { uid:x.uid, n:x.n, q:x.q, s:x.s, a:x.a, nm:x.nm };
     });
-    return foldIn(base, L).map(function (x){ return { n:x.n, q:x.q, s:x.s, nm:x.nm }; });
+    return foldIn(base, L).map(function (x){ return wire(x); });
   }
   loadSess();
 
@@ -567,16 +567,27 @@
     return ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[c]; }); }
   function money(v){ return String(v).replace(/\B(?=(\d{3})+(?!\d))/g, " ") + " " + data.currency; }
   function saveCart(){ try { localStorage.setItem("menu.cart", JSON.stringify(cart)); } catch (e) {} }
+  // Bien the nam ben trong mot mon (ba ba 21A/21B, mi xao C8A/C8B/C8C): khoa trong sizeLabel
+  // co truong "nm". Gui ve quay thi so hieu la chinh ma bien the ("21A"), ten la "nm".
+  function isVar(s){ var l = s && data && data.sizeLabel && data.sizeLabel[s]; return !!(l && l.nm); }
+  function numOf(n, s){ return isVar(s) ? s : n; }
+  function wire(x){
+    if (isVar(x.s)) return { n: x.s, q: x.q, s: "", nm: data.sizeLabel[x.s].nm };
+    return { n: x.n, q: x.q, s: x.s || "", nm: x.nm };
+  }
+  function szText(s){ return isVar(s) ? s + " · " + data.sizeLabel[s][lang] : data.sizeLabel[s][lang]; }
+  // Gia 0 = chua niem yet (ba ba): hien "hoi gia", khong cong vao tong.
+  function priceTxt(a){ return a > 0 ? money(a) : T[lang].askPrice; }
 
   function buyHTML(it, uid, pi){
     var p = it.p[pi], q = cart[uid] || 0;
-    var lbl = p.s ? '<span class="sz">' + esc(data.sizeLabel[p.s][lang]) + '</span>' : "";
+    var lbl = p.s ? '<span class="sz">' + esc(szText(p.s)) + '</span>' : "";
     var ctl = q > 0
       ? '<span class="step"><button type="button" data-uid="' + uid + '" data-d="-1" aria-label="-">&minus;</button>'
         + '<span class="qty">' + q + '</span>'
         + '<button type="button" data-uid="' + uid + '" data-d="1" aria-label="+">+</button></span>'
       : '<button type="button" class="add" data-uid="' + uid + '" data-d="1" aria-label="+">+</button>';
-    return '<span class="pline"><span class="amt">' + money(p.a) + lbl + '</span>' + ctl + '</span>';
+    return '<span class="pline"><span class="amt">' + esc(priceTxt(p.a)) + lbl + '</span>' + ctl + '</span>';
   }
 
   function rowHTML(it, gid, ii){
@@ -609,19 +620,26 @@
   // Go dung dau so hieu (N1, C11, mf0, A2...) thi CHI loc theo so hieu,
   // khong thi chu "n" lai lam hien ca tram mon co chu n trong ten.
   var numOnly = false;
+  function numHit(it, q){
+    if (it.n.toLowerCase().indexOf(q) === 0) return true;
+    for (var j = 0; j < it.p.length; j++) if (isVar(it.p[j].s) && it.p[j].s.toLowerCase().indexOf(q) === 0) return true;
+    return false;
+  }
   function anyNum(q){
     if (!data || !q) return false;
     for (var g = 0; g < data.groups.length; g++){
       var its = data.groups[g].items;
-      for (var k = 0; k < its.length; k++) if (its[k].n.toLowerCase().indexOf(q) === 0) return true;
+      for (var k = 0; k < its.length; k++) if (numHit(its[k], q)) return true;
     }
     return false;
   }
   function match(it, q){
     if (!q) return true;
-    if (it.n.toLowerCase().indexOf(q) === 0) return true;
+    if (numHit(it, q)) return true;
     if (numOnly) return false;
     for (var i = 0; i < ORDER.length; i++) if (it[ORDER[i]].toLowerCase().indexOf(q) > -1) return true;
+    for (var j = 0; j < it.p.length; j++) if (isVar(it.p[j].s))
+      for (i = 0; i < ORDER.length; i++) if (data.sizeLabel[it.p[j].s][ORDER[i]].toLowerCase().indexOf(q) > -1) return true;
     return false;
   }
 
@@ -671,14 +689,16 @@
     cl.hidden = !(sess && !ONLINE);
     if (sess && !ONLINE) cl.textContent = t.roundNow.replace("{n}", (sess.seq || 1) + 1);
     document.getElementById("slipnote").textContent = ONLINE ? t.noteOnline : t.note;
+    var ask = false;
     for (var i = 0; i < L.length; i++){
       var e = L[i], sz = e.p.s ? " · " + esc(data.sizeLabel[e.p.s][lang]) : "";
-      html += '<div class="sline"><div class="sn">' + esc(e.it.n) + '</div>'
-            + '<div><div>' + esc(e.it[lang]) + '</div><div class="sq">' + e.q + ' × ' + money(e.p.a) + sz + '</div></div>'
-            + '<div class="sp">' + money(e.p.a * e.q) + '</div></div>';
+      if (!(e.p.a > 0)) ask = true;
+      html += '<div class="sline"><div class="sn">' + esc(numOf(e.it.n, e.p.s)) + '</div>'
+            + '<div><div>' + esc(e.it[lang]) + '</div><div class="sq">' + e.q + ' × ' + esc(priceTxt(e.p.a)) + sz + '</div></div>'
+            + '<div class="sp">' + (e.p.a > 0 ? money(e.p.a * e.q) : "—") + '</div></div>';
     }
     document.getElementById("slipitems").innerHTML = html || '<div class="empty">' + esc(t.emptyCart) + '</div>';
-    document.getElementById("stotval").textContent = money(cartTotal().sum);
+    document.getElementById("stotval").textContent = money(cartTotal().sum) + (ask ? " " + t.plusAsk : "");
     renderAlready();
     var mb0 = document.getElementById("addmorebtn"); if (!mb0.hidden) mb0.textContent = t.addMoreBtn;
     document.getElementById("sendlbl").textContent =
@@ -713,7 +733,7 @@
         var e = index[x.uid];
         var nm = e ? e.it[lang] : x.nm;
         var sz = x.s && data && data.sizeLabel ? " · " + data.sizeLabel[x.s][lang] : "";
-        html += '<div class="aline"><span class="an">' + esc(x.n) + '</span>'
+        html += '<div class="aline"><span class="an">' + esc(numOf(x.n, x.s)) + '</span>'
               + '<span>' + esc(nm) + esc(sz) + '</span>'
               + '<span class="aq">×' + x.q + '</span></div>';
       }
@@ -722,7 +742,8 @@
     document.getElementById("already-code").textContent = sess.code ? ("№ " + sess.code) : "";
     document.getElementById("already-list").innerHTML   = html;
     document.getElementById("already-tl").textContent   = t.allTotal;
-    document.getElementById("already-tv").textContent   = data ? money(sessTotal()) : String(sessTotal());
+    var askA = sess.items.some(function (x){ return !(x.a > 0); });
+    document.getElementById("already-tv").textContent   = (data ? money(sessTotal()) : String(sessTotal())) + (askA ? " " + t.plusAsk : "");
     var nb = document.getElementById("newsess");
     if (nb.dataset.armed !== "1") nb.textContent = t.newSess;
     box.hidden = false;
@@ -1021,7 +1042,7 @@
     var items = L.slice().sort(function (a, b){
       return String(a.it.n).localeCompare(String(b.it.n), undefined, { numeric:true });
     }).map(function (e){
-      return { n: e.it.n, q: e.q, s: e.p.s || "", nm: e.it.vi };
+      return wire({ n: e.it.n, q: e.q, s: e.p.s || "", nm: e.it.vi });
     });
     var body = { items: items, total: total, lang: lang, key: api.key || "" };
     for (var k in head) if (Object.prototype.hasOwnProperty.call(head, k)) body[k] = head[k];
@@ -1038,7 +1059,9 @@
       table: tbl, ts: Date.now(), iso: new Date().toISOString(), status: "new",
       total: total, lang: lang,
       lines: L.map(function (e){
-        return { n:e.it.n, ru:e.it.ru, vi:e.it.vi, q:e.q, a:e.p.a, s:e.p.s || "" };
+        var v = isVar(e.p.s);
+        return { n: numOf(e.it.n, e.p.s), ru: e.it.ru, vi: v ? data.sizeLabel[e.p.s].nm : e.it.vi,
+                 q: e.q, a: e.p.a, s: v ? "" : (e.p.s || "") };
       })
     }).then(function (){});
   }
