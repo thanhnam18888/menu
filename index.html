@@ -210,6 +210,11 @@
   .already-h{display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin-bottom:8px}
   .already-t{font-weight:700; font-size:13.5px; color:var(--accent-ink)}
   .already-c{font-variant-numeric:tabular-nums; font-weight:800; font-size:17px; color:var(--accent); white-space:nowrap}
+  .around-h{display:flex; justify-content:space-between; gap:10px; margin-top:10px; padding-bottom:3px;
+    border-bottom:1px dashed rgba(163,46,36,.35); font-size:12px; font-weight:700; color:var(--accent-ink);
+    font-variant-numeric:tabular-nums}
+  .around-h:first-child{margin-top:0}
+  .around-h.now{margin:2px 0 4px; color:var(--accent); border-bottom-style:solid}
   .aline{display:grid; grid-template-columns:auto 1fr auto; gap:10px; align-items:baseline; padding-block:5px; font-size:13px; color:var(--accent-ink)}
   .aline + .aline{border-top:1px solid rgba(163,46,36,.16)}
   .aline .an{font-variant-numeric:tabular-nums; font-weight:700; min-width:34px}
@@ -311,6 +316,7 @@
       <button type="button" class="linkbtn" id="newsess"></button>
     </div>
     <div class="addnote" id="addnote" hidden></div>
+    <div class="around-h now" id="cartlbl" hidden></div>
     <div id="slipitems"></div>
     <div class="stot"><span id="stotlabel"></span><span class="n" id="stotval"></span></div>
     <div class="note" id="slipnote"></div>
@@ -391,7 +397,7 @@
           send:"Отправить", sending:"Отправка…", needTable:"Укажите номер стола",
           codeHint:"Покажите этот номер официанту",
           sentOk:"Заказ отправлен. Официант подойдёт к столу.", sentErr:"Не отправилось. Позовите официанта.",
-          already:"Вы уже заказали", allTotal:"Всего по столу", addMore:"Дозаказать", addMoreBtn:"＋ Добавить ещё блюда", myOrder:"Мой заказ →",
+          already:"Вы уже заказали", allTotal:"Всего по столу", roundLbl:"Заказ {n}", roundNow:"Заказ {n} — выбираете сейчас", thisRound:"Этот заказ", addMore:"Дозаказать", addMoreBtn:"＋ Добавить ещё блюда", myOrder:"Мой заказ →",
           addNote:"Выберите блюда — они добавятся к заказу, который вы уже сделали.",
           newSess:"Начать новый заказ", newSessAsk:"Точно? Список выше сотрётся",
           sentAdd:"Добавлено к заказу. Официант подойдёт.",
@@ -426,7 +432,7 @@
           send:"Gửi đơn", sending:"Đang gửi…", needTable:"Nhập số bàn",
           codeHint:"Đưa số này cho nhân viên xem",
           sentOk:"Đã gửi. Nhân viên sẽ ra bàn.", sentErr:"Gửi không được. Gọi nhân viên giúp.",
-          already:"Đã gọi", allTotal:"Tổng cả bàn", addMore:"Gọi thêm", addMoreBtn:"＋ Gọi thêm món", myOrder:"Đơn đã gọi →",
+          already:"Đã gọi", allTotal:"Tổng cả bàn", roundLbl:"Lần {n}", roundNow:"Lần {n} — đang chọn", thisRound:"Lần này", addMore:"Gọi thêm", addMoreBtn:"＋ Gọi thêm món", myOrder:"Đơn đã gọi →",
           addNote:"Chọn món — sẽ được thêm vào đơn bạn đã gọi.",
           newSess:"Bắt đầu đơn mới", newSessAsk:"Chắc chưa? Danh sách trên sẽ mất",
           sentAdd:"Đã thêm vào đơn. Nhân viên sẽ ra bàn.",
@@ -461,7 +467,7 @@
           send:"发送", sending:"发送中…", needTable:"请填写桌号",
           codeHint:"请把这个号码给服务员看",
           sentOk:"已发送，服务员马上过来。", sentErr:"发送失败，请叫服务员。",
-          already:"已点", allTotal:"全桌合计", addMore:"加菜", addMoreBtn:"＋ 继续加菜", myOrder:"已点菜单 →",
+          already:"已点", allTotal:"全桌合计", roundLbl:"第{n}次", roundNow:"第{n}次 — 正在选", thisRound:"本次", addMore:"加菜", addMoreBtn:"＋ 继续加菜", myOrder:"已点菜单 →",
           addNote:"选好菜品，将并入您已下的订单。",
           newSess:"重新开单", newSessAsk:"确定？上面的列表会清空",
           sentAdd:"已加入订单，服务员马上过来。",
@@ -506,7 +512,12 @@
     if (!TABLE) return;
     try {
       var s = JSON.parse(localStorage.getItem("menu.sess") || "null");
-      if (s && s.ban === TABLE && s.items && s.items.length && (Date.now() - s.ts) < SESS_MS) sess = s;
+      if (s && s.ban === TABLE && s.items && s.items.length && (Date.now() - s.ts) < SESS_MS){
+        // phien luu tu ban truoc chua chia lan -> coi toan bo la lan 1
+        if (!s.rounds || !s.rounds.length)
+          s.rounds = [{ seq: 1, ts: s.t0 || s.ts, items: s.items.map(function (x){ return { uid:x.uid, n:x.n, q:x.q, s:x.s, a:x.a, nm:x.nm }; }) }];
+        sess = s;
+      }
       else if (s) localStorage.removeItem("menu.sess");
     } catch (e) {}
   }
@@ -655,7 +666,10 @@
     document.getElementById("slipshow").textContent = ONLINE ? "" : t.show;
     document.getElementById("closeslip").textContent = t.close;
     document.getElementById("clearcart").textContent = t.clear;
-    document.getElementById("stotlabel").textContent = t.total;
+    document.getElementById("stotlabel").textContent = (sess && !ONLINE) ? t.thisRound : t.total;
+    var cl = document.getElementById("cartlbl");
+    cl.hidden = !(sess && !ONLINE);
+    if (sess && !ONLINE) cl.textContent = t.roundNow.replace("{n}", (sess.seq || 1) + 1);
     document.getElementById("slipnote").textContent = ONLINE ? t.noteOnline : t.note;
     for (var i = 0; i < L.length; i++){
       var e = L[i], sz = e.p.s ? " · " + esc(data.sizeLabel[e.p.s][lang]) : "";
@@ -683,18 +697,26 @@
   }
 
   // ---------------- khối "đã gọi" ở đầu phiếu ----------------
+  function clock(ts){ var d = new Date(ts || Date.now()); return ("0"+d.getHours()).slice(-2) + ":" + ("0"+d.getMinutes()).slice(-2); }
   function renderAlready(){
     var box = document.getElementById("already"), an = document.getElementById("addnote");
     if (!sess){ box.hidden = true; an.hidden = true; return; }
     var t = T[lang], html = "";
-    for (var i = 0; i < sess.items.length; i++){
-      var x = sess.items[i];
-      var e = index[x.uid];
-      var nm = e ? e.it[lang] : x.nm;
-      var sz = x.s && data && data.sizeLabel ? " · " + data.sizeLabel[x.s][lang] : "";
-      html += '<div class="aline"><span class="an">' + esc(x.n) + '</span>'
-            + '<span>' + esc(nm) + esc(sz) + '</span>'
-            + '<span class="aq">×' + x.q + '</span></div>';
+    var rounds = (sess.rounds && sess.rounds.length) ? sess.rounds : [{ seq: 1, ts: sess.ts, items: sess.items }];
+    for (var r = 0; r < rounds.length; r++){
+      var rd = rounds[r], sub = 0;
+      for (var j = 0; j < rd.items.length; j++) sub += rd.items[j].a * rd.items[j].q;
+      html += '<div class="around-h"><span>' + esc(t.roundLbl.replace("{n}", rd.seq)) + ' · ' + clock(rd.ts) + '</span>'
+            + '<span>' + (data ? money(sub) : sub) + '</span></div>';
+      for (var i = 0; i < rd.items.length; i++){
+        var x = rd.items[i];
+        var e = index[x.uid];
+        var nm = e ? e.it[lang] : x.nm;
+        var sz = x.s && data && data.sizeLabel ? " · " + data.sizeLabel[x.s][lang] : "";
+        html += '<div class="aline"><span class="an">' + esc(x.n) + '</span>'
+              + '<span>' + esc(nm) + esc(sz) + '</span>'
+              + '<span class="aq">×' + x.q + '</span></div>';
+      }
     }
     document.getElementById("already-t").textContent    = t.already;
     document.getElementById("already-code").textContent = sess.code ? ("№ " + sess.code) : "";
@@ -951,7 +973,7 @@
     if ($slip.hidden) document.body.style.overflow = "";
   });
   document.getElementById("openslip").addEventListener("click", function (){
-    renderSlip(); $slip.hidden = false; document.body.style.overflow = "hidden";
+    renderSlip(); $slip.hidden = false; $slip.scrollTop = 0; document.body.style.overflow = "hidden";
   });
   document.getElementById("closeslip").addEventListener("click", function (){
     $slip.hidden = true; document.body.style.overflow = "";
@@ -1062,9 +1084,11 @@
       btn.disabled = false;
       // Mở / nối tiếp phiên của bàn để lần sau khách gọi thêm được.
       if (!ONLINE && tbl){
-        if (!sess) sess = { ban: tbl, code: code || 0, seq: 1, items: [], ts: Date.now() };
+        if (!sess) sess = { ban: tbl, code: code || 0, seq: 1, items: [], rounds: [], t0: Date.now(), ts: Date.now() };
         else { sess.seq = (sess.seq || 1) + 1; if (code) sess.code = code; }
-        sess.items = foldIn(sess.items, L);
+        if (!sess.rounds) sess.rounds = [];
+        sess.rounds.push({ seq: sess.seq, ts: Date.now(), items: foldIn([], L) });   // mon cua RIENG lan nay
+        sess.items = foldIn(sess.items, L);                                            // cong don ca ban
         sess.ts = Date.now();
         saveSess();
       }
