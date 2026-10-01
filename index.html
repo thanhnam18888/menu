@@ -106,7 +106,7 @@
   .row.haspic{grid-template-columns:46px 58px 1fr auto}
   .pic{width:58px; height:58px; border-radius:8px; object-fit:cover; display:block; background:var(--line-soft); cursor:zoom-in; border:0; padding:0}
   .ocode{margin-top:12px; padding:16px 14px; border:2px solid var(--accent); border-radius:12px; text-align:center; background:var(--accent-soft)}
-  .ocode-n{font-size:52px; font-weight:800; line-height:1.05; letter-spacing:2px; color:var(--accent); font-variant-numeric:tabular-nums}
+  .ocode-n{font-size:clamp(34px, 11vw, 52px); font-weight:800; line-height:1.05; letter-spacing:1px; white-space:nowrap; color:var(--accent); font-variant-numeric:tabular-nums}
   .ocode-h{font-size:13.5px; margin-top:6px}
   .lb{position:fixed; inset:0; background:rgba(0,0,0,.94); display:none; align-items:center; justify-content:center; flex-direction:column; gap:14px; padding:20px; z-index:90}
   .lb.on{display:flex}
