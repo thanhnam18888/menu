@@ -83,6 +83,17 @@
   .jump::-webkit-scrollbar{display:none}
   .jump a{flex:0 0 auto; font-size:12.5px; font-weight:500; text-decoration:none; color:var(--chip-ink); background:var(--chip); padding:5px 10px; border-radius:999px}
   .jump a:focus-visible{outline:2px solid var(--accent); outline-offset:1px}
+  .jump a.on{background:var(--accent); color:var(--on-accent)}
+  /* bam nut nhom: tieu de nhom khong bi thanh dau trang (dinh tren cung) che mat */
+  main section{scroll-margin-top:var(--hdr, 120px)}
+  /* con nhom o ben phai: mo dan mep phai de bao "con nua, vuot sang" */
+  .jump.more{-webkit-mask-image:linear-gradient(to right,#000 82%,transparent);
+             mask-image:linear-gradient(to right,#000 82%,transparent)}
+  /* may tinh dung chuot: khong ai biet cuon ngang -> xuong dong, hien du 12 nhom */
+  @media (hover:hover) and (pointer:fine){
+    .jump{flex-wrap:wrap; overflow:visible}
+    .jump.more{-webkit-mask-image:none; mask-image:none}
+  }
 
   main{padding-bottom:96px}
   .ghead{font-family:var(--serif); font-size:13px; font-weight:600; letter-spacing:.09em; text-transform:uppercase; color:var(--accent); background:var(--ground); padding-block:18px 7px; border-bottom:1px solid var(--line)}
@@ -209,6 +220,10 @@
     font:500 12.5px/1.3 var(--sans); padding:8px 0 0; cursor:pointer}
   .linkbtn:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
   .addnote{font-size:12.5px; color:var(--muted); margin-bottom:8px}
+  .moreb{display:block; width:100%; margin-top:12px; appearance:none; cursor:pointer;
+    font:700 16px/1 var(--sans); padding:15px 16px; border-radius:10px;
+    border:2px solid var(--accent); background:var(--surface); color:var(--accent)}
+  .moreb:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
 
   /* ---- kassa ---- */
   .kwrap{max-width:var(--wrap); margin:0 auto; padding-inline:16px; padding-block:14px 60px}
@@ -345,6 +360,7 @@
         <div class="ocode-n" id="ordercodenum"></div>
         <div class="ocode-h" id="ordercodehint"></div>
       </div>
+      <button type="button" class="moreb" id="addmorebtn" hidden></button>
     </div>
   </div>
 </section>
@@ -375,7 +391,7 @@
           send:"Отправить", sending:"Отправка…", needTable:"Укажите номер стола",
           codeHint:"Покажите этот номер официанту",
           sentOk:"Заказ отправлен. Официант подойдёт к столу.", sentErr:"Не отправилось. Позовите официанта.",
-          already:"Вы уже заказали", allTotal:"Всего по столу", addMore:"Дозаказать",
+          already:"Вы уже заказали", allTotal:"Всего по столу", addMore:"Дозаказать", addMoreBtn:"＋ Добавить ещё блюда", myOrder:"Мой заказ →",
           addNote:"Выберите блюда — они добавятся к заказу, который вы уже сделали.",
           newSess:"Начать новый заказ", newSessAsk:"Точно? Список выше сотрётся",
           sentAdd:"Добавлено к заказу. Официант подойдёт.",
@@ -410,7 +426,7 @@
           send:"Gửi đơn", sending:"Đang gửi…", needTable:"Nhập số bàn",
           codeHint:"Đưa số này cho nhân viên xem",
           sentOk:"Đã gửi. Nhân viên sẽ ra bàn.", sentErr:"Gửi không được. Gọi nhân viên giúp.",
-          already:"Đã gọi", allTotal:"Tổng cả bàn", addMore:"Gọi thêm",
+          already:"Đã gọi", allTotal:"Tổng cả bàn", addMore:"Gọi thêm", addMoreBtn:"＋ Gọi thêm món", myOrder:"Đơn đã gọi →",
           addNote:"Chọn món — sẽ được thêm vào đơn bạn đã gọi.",
           newSess:"Bắt đầu đơn mới", newSessAsk:"Chắc chưa? Danh sách trên sẽ mất",
           sentAdd:"Đã thêm vào đơn. Nhân viên sẽ ra bàn.",
@@ -445,7 +461,7 @@
           send:"发送", sending:"发送中…", needTable:"请填写桌号",
           codeHint:"请把这个号码给服务员看",
           sentOk:"已发送，服务员马上过来。", sentErr:"发送失败，请叫服务员。",
-          already:"已点", allTotal:"全桌合计", addMore:"加菜",
+          already:"已点", allTotal:"全桌合计", addMore:"加菜", addMoreBtn:"＋ 继续加菜", myOrder:"已点菜单 →",
           addNote:"选好菜品，将并入您已下的订单。",
           newSess:"重新开单", newSessAsk:"确定？上面的列表会清空",
           sentAdd:"已加入订单，服务员马上过来。",
@@ -620,6 +636,7 @@
       // Giỏ rỗng nhưng bàn đã có đơn: vẫn giữ thanh dưới để khách bấm vào xem đơn cũ.
       if (sess){
         $bar.hidden = false;
+        document.getElementById("openslip").textContent = t.myOrder;
         document.getElementById("barcnt").textContent = t.already + (sess.code ? "  № " + sess.code : "");
         document.getElementById("barsum").textContent = data ? money(sessTotal()) : String(sessTotal());
         return;
@@ -627,6 +644,7 @@
       $bar.hidden = true; return;
     }
     $bar.hidden = false;
+    if (sess) document.getElementById("openslip").textContent = t.addMore + " →";
     document.getElementById("barcnt").textContent = c.n + dishWord(c.n);
     document.getElementById("barsum").textContent = money(c.sum);
   }
@@ -648,6 +666,7 @@
     document.getElementById("slipitems").innerHTML = html || '<div class="empty">' + esc(t.emptyCart) + '</div>';
     document.getElementById("stotval").textContent = money(cartTotal().sum);
     renderAlready();
+    var mb0 = document.getElementById("addmorebtn"); if (!mb0.hidden) mb0.textContent = t.addMoreBtn;
     document.getElementById("sendlbl").textContent =
       ONLINE ? t.sendlblOnline : (TABLE ? t.sendlblFixed : t.sendlbl);
     document.getElementById("sendgo").textContent =
@@ -687,6 +706,14 @@
     box.hidden = false;
     an.textContent = t.addNote; an.hidden = false;
   }
+
+  document.getElementById("addmorebtn").addEventListener("click", function (){
+    this.hidden = true;
+    document.getElementById("ordercode").hidden = true;
+    document.getElementById("sendmsg").textContent = "";
+    $slip.hidden = true; document.body.style.overflow = "";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
 
   document.getElementById("newsess").addEventListener("click", function (){
     var t = T[lang];
@@ -810,6 +837,37 @@
     };
   }
 
+  // ---- hang nut nhom: bao con nhom an ben phai, to sang nhom dang xem ----
+  function updateJump(){
+    var hd = document.querySelector("header.top");
+    if (hd) document.documentElement.style.setProperty("--hdr", hd.offsetHeight + "px");
+    var j = $jump;
+    var more = j.scrollWidth > j.clientWidth + 2 && j.scrollLeft + j.clientWidth < j.scrollWidth - 4;
+    j.classList[more ? "add" : "remove"]("more");
+  }
+  var spyTick = false;
+  function spy(){
+    spyTick = false;
+    var links = $jump.querySelectorAll("a"); if (!links.length) return;
+    var top = document.querySelector("header.top").getBoundingClientRect().bottom + 12;
+    var cur = null;
+    for (var i = 0; i < links.length; i++){
+      var sec = document.getElementById(links[i].getAttribute("href").slice(1));
+      if (sec && sec.getBoundingClientRect().top <= top) cur = links[i];
+    }
+    if (!cur) cur = links[0];
+    for (var k = 0; k < links.length; k++) links[k].classList[links[k] === cur ? "add" : "remove"]("on");
+    // dua nut nhom dang xem vao giua hang (chi khi hang dang cuon ngang)
+    var j = $jump;
+    if (j.scrollWidth > j.clientWidth + 2){
+      var want = cur.offsetLeft - (j.clientWidth - cur.offsetWidth) / 2;
+      if (Math.abs(j.scrollLeft - want) > 8) j.scrollTo({ left: Math.max(0, want), behavior: "smooth" });
+    }
+  }
+  window.addEventListener("scroll", function (){ if (!spyTick){ spyTick = true; requestAnimationFrame(spy); } }, { passive: true });
+  window.addEventListener("resize", function (){ updateJump(); spy(); });
+  $jump.addEventListener("scroll", updateJump, { passive: true });
+
   function render(){
     var t = T[lang];
     document.getElementById("brand").textContent = t.brand;
@@ -840,6 +898,7 @@
     }
     $list.innerHTML = shown ? html : '<div class="empty">' + esc(t.empty) + '</div>';
     $jump.innerHTML = q ? "" : nav;
+    updateJump(); requestAnimationFrame(spy);
     document.getElementById("foot").textContent = (q ? t.found + shown + " · " : "") + t.foot + data.updated;
     renderBar();
     if (!$slip.hidden) renderSlip();
@@ -1019,6 +1078,8 @@
         document.getElementById("ordercodehint").textContent =
           ONLINE ? t.codeHintOnline : (wasAdd ? t.codeHintAdd : t.codeHint);
         box.hidden = false;
+        var mb = document.getElementById("addmorebtn");
+        mb.textContent = t.addMoreBtn; mb.hidden = ONLINE;
         box.scrollIntoView({ block: "center", behavior: "smooth" });
       } else { box.hidden = true; }
     }, function (){
