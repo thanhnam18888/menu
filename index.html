@@ -99,7 +99,9 @@
   .ocode-h{font-size:13.5px; margin-top:6px}
   .lb{position:fixed; inset:0; background:rgba(0,0,0,.94); display:none; align-items:center; justify-content:center; flex-direction:column; gap:14px; padding:20px; z-index:90}
   .lb.on{display:flex}
-  .lb img{max-width:min(92vw,520px); max-height:70vh; border-radius:12px; object-fit:contain}
+  .lb img{max-width:min(92vw,520px); max-height:70vh; border-radius:12px; object-fit:contain;
+    transition:filter .18s ease}
+  .lb img.blur{filter:blur(6px)}
   .lb .cap{color:#fff; font-size:15px; text-align:center; max-width:min(92vw,520px)}
   .lb .cap b{color:var(--accent)}
   .nm{min-width:0}
@@ -395,7 +397,7 @@
           noteOnline:"Это предварительный расчёт. Заказ вступает в силу после звонка оператора — он подтвердит состав, время и стоимость доставки. Оплата при получении.",
           sentOkOnline:"Заказ принят. Мы перезвоним для подтверждения.",
           codeHintOnline:"Назовите этот номер, когда мы позвоним",
-          tags:{spicy:"острое",hot3:"очень острое",offal:"субпродукты",sea:"морепродукты",peanut:"арахис",dairy:"молочное"} },
+          tags:{spicy:"острое",hot3:"очень острое",offal:"субпродукты",sea:"морепродукты",peanut:"арахис",dairy:"молочное",alc:"алкоголь"} },
     vi: { brand:"Thực đơn", hint:"Đọc số hiệu món cho nhân viên", search:"Tìm: số hiệu hoặc tên món",
           tri:"3 thứ tiếng", empty:"Không tìm thấy món nào", found:"Tìm thấy: ",
           foot:"Giá tính bằng rúp. Cập nhật ", err:"Không tải được thực đơn — xin dùng menu giấy.",
@@ -430,7 +432,7 @@
           noteOnline:"Đây chỉ là tạm tính. Đơn chỉ có hiệu lực sau khi quán gọi xác nhận món, giờ và phí giao. Trả tiền khi nhận hàng.",
           sentOkOnline:"Đã nhận đơn. Quán sẽ gọi lại để xác nhận.",
           codeHintOnline:"Đọc số này khi quán gọi cho bạn",
-          tags:{spicy:"cay",hot3:"rất cay",offal:"nội tạng",sea:"hải sản",peanut:"lạc",dairy:"sữa"} },
+          tags:{spicy:"cay",hot3:"rất cay",offal:"nội tạng",sea:"hải sản",peanut:"lạc",dairy:"sữa",alc:"có cồn"} },
     zh: { brand:"菜单", hint:"向服务员报菜品编号", search:"搜索：编号或菜名",
           tri:"三语", empty:"未找到菜品", found:"找到：",
           foot:"价格以卢布计。更新于 ", err:"菜单加载失败 — 请使用纸质菜单。",
@@ -465,7 +467,7 @@
           noteOnline:"此为预估金额。店员来电确认菜品、时间和配送费后订单方才生效。收货时付款。",
           sentOkOnline:"已收到订单，我们会来电确认。",
           codeHintOnline:"我们来电时请报这个号码",
-          tags:{spicy:"辣",hot3:"特辣",offal:"内脏",sea:"海鲜",peanut:"花生",dairy:"奶制品"} }
+          tags:{spicy:"辣",hot3:"特辣",offal:"内脏",sea:"海鲜",peanut:"花生",dairy:"奶制品",alc:"含酒精"} }
   };
   var ORDER = ["ru","vi","zh"];
   var lang = "ru", triple = false, data = null, index = {}, cart = {};
@@ -565,7 +567,7 @@
       buys += buyHTML(it, uid, i);
     }
     var pic = it.img
-      ? '<img class="pic" src="img/' + esc(it.img) + '" alt="" loading="lazy" decoding="async"'
+      ? '<img class="pic" src="img/t/' + esc(it.img) + '" alt="" loading="lazy" decoding="async"'
         + ' data-pic="' + esc(it.img) + '" data-n="' + esc(it.n) + '" data-nm="' + esc(it[lang]) + '">'
       : "";
     return '<div class="row' + (picked ? " picked" : "") + (pic ? " haspic" : "") + '" data-row="' + gid + "_" + ii + '">'
@@ -577,9 +579,21 @@
       + '</div><div class="buy">' + buys + '</div></div>';
   }
 
+  // Go dung dau so hieu (N1, C11, mf0, A2...) thi CHI loc theo so hieu,
+  // khong thi chu "n" lai lam hien ca tram mon co chu n trong ten.
+  var numOnly = false;
+  function anyNum(q){
+    if (!data || !q) return false;
+    for (var g = 0; g < data.groups.length; g++){
+      var its = data.groups[g].items;
+      for (var k = 0; k < its.length; k++) if (its[k].n.toLowerCase().indexOf(q) === 0) return true;
+    }
+    return false;
+  }
   function match(it, q){
     if (!q) return true;
     if (it.n.toLowerCase().indexOf(q) === 0) return true;
+    if (numOnly) return false;
     for (var i = 0; i < ORDER.length; i++) if (it[ORDER[i]].toLowerCase().indexOf(q) > -1) return true;
     return false;
   }
@@ -813,6 +827,7 @@
     if (!data){ $list.innerHTML = '<div class="empty">…</div>'; return; }
 
     var q = $q.value.trim().toLowerCase(), html = "", nav = "", shown = 0;
+    numOnly = anyNum(q);
     for (var g = 0; g < data.groups.length; g++){
       var grp = data.groups[g], rows = "", n = 0;
       for (var k = 0; k < grp.items.length; k++){
@@ -860,7 +875,13 @@
 
   var $lb = document.getElementById("lb");
   function openPic(im){
-    document.getElementById("lbimg").src = "img/" + im.getAttribute("data-pic");
+    var f = im.getAttribute("data-pic"), big = document.getElementById("lbimg");
+    // Hien ngay ban nho (da nam trong bo nho) roi am tham tai ban net, xong moi doi.
+    big.src = "img/t/" + f;
+    big.classList.add("blur");
+    var hi = new Image();
+    hi.onload = function (){ big.src = hi.src; big.classList.remove("blur"); };
+    hi.src = "img/" + f;
     document.getElementById("lbcap").innerHTML =
       "<b>" + esc(im.getAttribute("data-n")) + "</b> · " + esc(im.getAttribute("data-nm"));
     $lb.classList.add("on"); document.body.style.overflow = "hidden";
